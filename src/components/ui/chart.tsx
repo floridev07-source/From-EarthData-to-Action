@@ -3,8 +3,6 @@
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 
-import { cn } from "./utils";
-
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
 
@@ -54,9 +52,7 @@ function ChartContainer({
       <div
         data-slot="chart"
         data-chart={chartId}
-        className={`${
-          "[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border flex aspect-video justify-center text-xs [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden"} ${className,
-         || ""}`}
+        className={`[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border flex aspect-video justify-center text-xs [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden ${className}`}
         {...props}
       >
         <ChartStyle id={chartId} config={config} />
@@ -185,9 +181,7 @@ function ChartTooltipContent({
           return (
             <div
               key={item.dataKey}
-              className={`${
-                "[&>svg]:text-muted-foreground flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5"} ${indicator === "dot" && "items-center",
-               || ""}`}
+              className={`[&>svg]:text-muted-foreground flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 ${indicator === "dot" && "items-center"}`}
             >
               {formatter && item?.value !== undefined && item.name ? (
                 formatter(item.value, item.name, item, index, item.payload)
@@ -198,15 +192,13 @@ function ChartTooltipContent({
                   ) : (
                     !hideIndicator && (
                       <div
-                        className={`${
-                          "shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)"} ${{
+                        className={`shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg) ${{
                             "h-2.5 w-2.5": indicator === "dot",
                             "w-1": indicator === "line",
                             "w-0 border-[1.5px] border-dashed bg-transparent":
                               indicator === "dashed",
                             "my-0.5": nestLabel && indicator === "dashed",
-                          },
-                         || ""}`}
+                          }}`}
                         style={
                           {
                             "--color-bg": indicatorColor,
@@ -217,9 +209,7 @@ function ChartTooltipContent({
                     )
                   )}
                   <div
-                    className={`${
-                      "flex flex-1 justify-between leading-none"} ${nestLabel ? "items-end" : "items-center",
-                     || ""}`}
+                    className={`flex flex-1 justify-between leading-none ${nestLabel ? "items-end" : "items-center"}`}
                   >
                     <div className="grid gap-1.5">
                       {nestLabel ? tooltipLabel : null}
@@ -265,9 +255,7 @@ function ChartLegendContent({
   return (
     <div
       className={`${
-        "flex items-center justify-center gap-4"} ${verticalAlign === "top" ? "pb-3" : "pt-3",
-        className,
-       || ""}`}
+        "flex items-center justify-center gap-4"} ${verticalAlign === "top" ? "pb-3" : "pt-3"} ${className}`}
     >
       {payload.map((item) => {
         const key = `${nameKey || item.dataKey || "value"}`;

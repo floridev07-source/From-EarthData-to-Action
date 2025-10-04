@@ -41,7 +41,7 @@ export default function App() {
     return (
         <div className="size-full relative bg-gradient-to-b from-[#0a0e1a] to-[#1a1f35] overflow-hidden">
             {/* Main Globe View */}
-            <div className="absolute inset-0">
+            <div className="h-[100vh]">
                 <Globe3D
                     selectedLayer={selectedLayers}
                     timeOffset={timeOffset}

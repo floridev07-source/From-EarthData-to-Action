@@ -3,8 +3,6 @@
 import * as React from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 
-import { cn } from "./utils";
-
 function Slider({
   className,
   defaultValue,
@@ -30,20 +28,17 @@ function Slider({
       value={value}
       min={min}
       max={max}
-      className={`${
-        "relative flex w-full touch-none items-center select-none data-[disabled]:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col"} ${className,
-       || ""}`}
+      className={`relative flex w-full touch-none items-center select-none data-[disabled]:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col ${className}`}
       {...props}
     >
       <SliderPrimitive.Track
         data-slot="slider-track"
         className={`${
-          "bg-muted relative grow overflow-hidden rounded-full data-[orientation=horizontal]:h-4 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5"} ${  || ""}`}
+          "bg-muted relative grow overflow-hidden rounded-full data-[orientation=horizontal]:h-4 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5"} ${className}`}
       >
         <SliderPrimitive.Range
           data-slot="slider-range"
-          className={`${
-            "bg-primary absolute data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full"} ${  || ""}`}
+          className={`bg-primary absolute data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full"} ${className}`}
         />
       </SliderPrimitive.Track>
       {Array.from({ length: _values.length }, (_, index) => (
