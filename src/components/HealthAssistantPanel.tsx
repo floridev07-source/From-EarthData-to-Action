@@ -46,7 +46,7 @@ interface HealthAssistantPanelProps {
     setVulnerableProfiles: Dispatch<SetStateAction<string>>;
 }
 
-const MALADIES = ['Asthme', 'Bronchite chronique', 'BPCO (COPD)', 'Pneumonie', 'Autres (précise)'];
+const MALADIES = ['Asthma', 'Chronic bronchitis', 'COPD', 'Pneumonia', 'Other (specify)'];
 
 const WHO_LIMITS = {
     no2: 25,
@@ -55,9 +55,9 @@ const WHO_LIMITS = {
 };
 
 const INNOVATIONS = [
-    "Wearable respiratoire connecté : configurez des alertes quand NO₂ dépasse 20 µg/m³ (WHO AQG 2021).",
-    "Prévisions IA 24h combinant NASA TEMPO + vents Open-Meteo pour planifier vos sorties en air le plus propre.",
-    "Overlay AR éducatif : visualisez PM2.5 en direct pour éviter les micro-zones polluées à proximité.",
+    "Connected respiratory wearable: set alerts when NO₂ exceeds 20 µg/m³ (WHO AQG 2021).",
+    "24h AI forecasts combining NASA TEMPO + Open-Meteo winds to plan outings in the cleanest air.",
+    "Educational AR overlay: visualize live PM2.5 to avoid nearby micro-polluted zones.",
 ];
 
 interface Coordinates {
@@ -76,7 +76,7 @@ interface AqiSnapshot {
 }
 
 interface RiskNarrative {
-    status: 'Bon' | 'Modéré' | 'Haut risque';
+    status: 'Good' | 'Moderate' | 'High risk';
     summary: string;
     vulnerableProfiles: string;
 }
@@ -93,15 +93,15 @@ function computeAqi(snapshot: Pick<AqiSnapshot, 'no2' | 'pm25' | 'o3'>): number 
 }
 
 function buildRiskNarrative(snapshot: AqiSnapshot): RiskNarrative {
-    const no2Comment = `NO₂ ${snapshot.no2.toFixed(1)} µg/m³ (OMS 24h < ${WHO_LIMITS.no2} µg/m³)`;
-    const pmComment = `PM2.5 ${snapshot.pm25.toFixed(1)} µg/m³ (OMS 24h < ${WHO_LIMITS.pm25} µg/m³)`;
-    const o3Comment = `O₃ ${snapshot.o3.toFixed(1)} µg/m³ (OMS pic saison < ${WHO_LIMITS.o3} µg/m³)`;
+    const no2Comment = `NO₂ ${snapshot.no2.toFixed(1)} µg/m³ (WHO 24h < ${WHO_LIMITS.no2} µg/m³)`;
+    const pmComment = `PM2.5 ${snapshot.pm25.toFixed(1)} µg/m³ (WHO 24h < ${WHO_LIMITS.pm25} µg/m³)`;
+    const o3Comment = `O₃ ${snapshot.o3.toFixed(1)} µg/m³ (WHO seasonal peak < ${WHO_LIMITS.o3} µg/m³)`;
 
     if (snapshot.no2 > WHO_LIMITS.no2 || snapshot.pm25 > WHO_LIMITS.pm25 || snapshot.o3 > WHO_LIMITS.o3) {
         return {
-            status: 'Haut risque',
-            summary: `Haut risque : ${no2Comment}, ${pmComment}, ${o3Comment}. Données NASA TEMPO + OpenAQ indiquent une exposition élevée, restez en intérieur si possible.`,
-            vulnerableProfiles: 'Enfants, asthmatiques, BPCO : privilégiez l’intérieur et purificateur HEPA.',
+            status: 'High risk',
+            summary: `High risk: ${no2Comment}, ${pmComment}, ${o3Comment}. NASA TEMPO + OpenAQ indicate high exposure; stay indoors if possible.`,
+            vulnerableProfiles: 'Children, asthmatics, COPD: prefer indoors and HEPA purifier.',
         };
     }
 
@@ -111,47 +111,47 @@ function buildRiskNarrative(snapshot: AqiSnapshot): RiskNarrative {
         snapshot.o3 > WHO_LIMITS.o3 * 0.4
     ) {
         return {
-            status: 'Modéré',
-            summary: `Modéré : ${no2Comment}, ${pmComment}, ${o3Comment}. Prévoir pauses et hydratation, surveillez fluctuations de vent (Open-Meteo).`,
-            vulnerableProfiles: 'Femmes enceintes, seniors, personnes souffrant d’asthme : limiter efforts extérieurs.',
+            status: 'Moderate',
+            summary: `Moderate: ${no2Comment}, ${pmComment}, ${o3Comment}. Plan breaks and hydration; monitor wind fluctuations (Open-Meteo).`,
+            vulnerableProfiles: 'Pregnant women, seniors, people with asthma: limit outdoor exertion.',
         };
     }
 
     return {
-        status: 'Bon',
-        summary: `Bon : ${no2Comment}, ${pmComment}, ${o3Comment}. Respect des seuils WHO AQG 2021 confirmé par TEMPO/OMS.`,
-        vulnerableProfiles: 'Population générale : conditions favorables, restez attentif aux alertes locales.',
+        status: 'Good',
+        summary: `Good: ${no2Comment}, ${pmComment}, ${o3Comment}. WHO AQG 2021 thresholds respected (confirmed by TEMPO/WHO).`,
+        vulnerableProfiles: 'General population: favorable conditions; stay attentive to local alerts.',
     };
 }
 
 function deriveAdaptedZones(snapshot: AqiSnapshot, coords: Coordinates): string[] {
     const baseCity = coords.label;
-    const breeze = snapshot.windSpeed >= 3 ? 'vents modérés dispersent les polluants' : 'vents faibles : privilégiez les zones boisées';
+    const breeze = snapshot.windSpeed >= 3 ? 'moderate winds disperse pollutants' : 'light winds: prefer wooded areas';
     return [
-        `${baseCity} - Parc urbain arboré : AQI estimé ${Math.max(20, snapshot.aqi - 30)} (OpenAQ < ${WHO_LIMITS.pm25} µg/m³).`,
-        `Côte à moins de 30 km : influence marine réduisant PM2.5 (${breeze}).`,
-        `Réserve naturelle recommandée par NASA MODIS : PM2.5 < 5 µg/m³, idéale pour asthme/BPCO.`,
-        `Balade matinale (avant 9h) : selon IA vents Open-Meteo, NO₂ réduit de 18 % vs. après-midi.`,
+        `${baseCity} - Tree-lined urban park: estimated AQI ${Math.max(20, snapshot.aqi - 30)} (OpenAQ < ${WHO_LIMITS.pm25} µg/m³).`,
+        `Coast within 30 km: marine influence reducing PM2.5 (${breeze}).`,
+        `Nature reserve recommended by NASA MODIS: PM2.5 < 5 µg/m³, ideal for asthma/COPD.`,
+        `Morning walk (before 9am): per AI with Open-Meteo winds, NO₂ reduced by 18% vs. afternoon.`,
     ];
 }
 
 function derivePreventionTips(maladie: string | null, snapshot: AqiSnapshot): { tips: string[]; score: number } {
     const baseTips = [
-        'Hydratez-vous et maintenez une humidité intérieure autour de 40-50 % (OMS).',
-        `Limitez les efforts dehors quand l'AQI dépasse ${snapshot.aqi}.`,
-        'Utilisez un masque FFP2 certifié en cas de pics > 100 AQI.',
-        "Aérez tôt le matin et surveillez l’app OpenAQ pour alertes locales.",
-        'Journalisez vos symptômes dans une appli wearable pour adapter traitements.',
+        'Stay hydrated and keep indoor humidity around 40-50% (WHO).',
+        `Limit exertion outdoors when AQI exceeds ${snapshot.aqi}.`,
+        'Use a certified FFP2/N95 mask during peaks > 100 AQI.',
+        "Ventilate early in the morning and monitor the OpenAQ app for local alerts.",
+        'Log symptoms in a wearable app to adapt treatments.',
     ];
 
-    if (maladie === 'Asthme') {
-        baseTips.push("Gardez l’inhalateur de secours et respectez le plan d’action validé par votre pneumologue.");
+    if (maladie === 'Asthma') {
+        baseTips.push("Keep your rescue inhaler on hand and follow the action plan approved by your pulmonologist.");
     }
-    if (maladie === 'BPCO (COPD)') {
-        baseTips.push('Mettez en place un purificateur HEPA et exercices respiratoires guidés.');
+    if (maladie === 'COPD') {
+        baseTips.push('Use a HEPA air purifier and perform guided breathing exercises.');
     }
-    if (maladie === 'Pneumonie') {
-        baseTips.push('Surveillez votre température et évitez les environnements avec humidité > 80 %.');
+    if (maladie === 'Pneumonia') {
+        baseTips.push('Monitor your temperature and avoid environments with humidity > 80%.');
     }
 
     const ratios = [
@@ -188,10 +188,10 @@ function parseCoordinates(cityInput: string, latLonInput: string, fallback: { ci
         return { lat: 48.8566, lon: 2.3522, label: 'Paris, France' };
     }
     if (cityInput.toLowerCase().includes('montreal')) {
-        return { lat: 45.5019, lon: -73.5674, label: 'Montréal, Canada' };
+        return { lat: 45.5019, lon: -73.5674, label: 'Montreal, Canada' };
     }
     if (cityInput.toLowerCase().includes('new york')) {
-        return { lat: 40.7128, lon: -74.006, label: 'New York, États-Unis' };
+        return { lat: 40.7128, lon: -74.006, label: 'New York, United States' };
     }
 
     return null;
@@ -289,7 +289,7 @@ export default function HealthAssistantPanel({
     vulnerableProfiles,
     setVulnerableProfiles,
 }: HealthAssistantPanelProps) {
-    const [cityInput, setCityInput] = useState('Montréal');
+    const [cityInput, setCityInput] = useState('Montreal');
     const [latLonInput, setLatLonInput] = useState('45.5019,-73.5674');
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState('');
@@ -308,14 +308,14 @@ export default function HealthAssistantPanel({
             // This avoids a React DOM NotFoundError when unmounting with AnimatePresence
             requestAnimationFrame(() => setStep(2));
         } else {
-            notify.error('Veuillez choisir une maladie valide.');
+            notify.error('Please choose a valid condition.');
         }
     };
 
     const handleLocationSubmit = async () => {
         const coords = parseCoordinates(cityInput, latLonInput, location);
         if (!coords) {
-            notify.error('Localisation invalide. Entrez Ville ou lat,lon (ex. 48.8566,2.3522).');
+            notify.error('Invalid location. Enter City or lat,lon (e.g., 48.8566,2.3522).');
             return;
         }
 
@@ -334,7 +334,7 @@ export default function HealthAssistantPanel({
             setAdaptedZones(zones);
             setStep(3);
         } catch (error) {
-            setApiError('Impossible de joindre une API. Utilisation des moyennes OMS globales.');
+            setApiError('Unable to reach an API. Using global WHO averages.');
             setAqiData({
                 no2: 10,
                 pm25: 5,
@@ -343,12 +343,12 @@ export default function HealthAssistantPanel({
                 windSpeed: 2,
                 aqi: 40,
             });
-            setRiskAssessment('Modéré : données globales OMS utilisées faute de connexion.');
-            setVulnerableProfiles('Groupes sensibles : asthmatiques, enfants, seniors.');
+            setRiskAssessment('Moderate: WHO global data used due to no connection.');
+            setVulnerableProfiles('Sensitive groups: asthmatics, children, seniors.');
             setAdaptedZones([
-                'Zones rurales avec PM2.5 < 10 µg/m³ (OMS).',
-                'Espaces côtiers ventilés recommandés par NASA Earthdata.',
-                'Parcs urbains à forte canopée : dispersion naturelle de NO₂.',
+                'Rural areas with PM2.5 < 10 µg/m³ (WHO).',
+                'Coastal ventilated areas recommended by NASA Earthdata.',
+                'Urban parks with high canopy: natural NO₂ dispersion.',
             ]);
             setStep(3);
         } finally {
@@ -358,7 +358,7 @@ export default function HealthAssistantPanel({
 
     const handleZonesNext = () => {
         if (!aqiData) {
-            notify.error('Renseignez d’abord votre localisation pour obtenir les données.');
+            notify.error('Provide your location first to get data.');
             return;
         }
         const { tips, score } = derivePreventionTips(maladie, aqiData);
@@ -381,9 +381,9 @@ export default function HealthAssistantPanel({
                     <div className="p-6 space-y-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h2 className="text-white">Assistant Santé Respiratoire</h2>
+                                <h2 className="text-white">Respiratory Health Assistant</h2>
                                 <p className="text-xs text-white/60">
-                                    Sources : NASA TEMPO, OpenAQ, Open-Meteo, WHO AQG 2021 (aucun conseil médical direct).
+                                    Sources: NASA TEMPO, OpenAQ, Open-Meteo, WHO AQG 2021 (no direct medical advice).
                                 </p>
                             </div>
                             <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/10">
@@ -394,11 +394,11 @@ export default function HealthAssistantPanel({
                         {step === 1 && (
                             <Card className="bg-white/5 border-white/10 p-4 space-y-4">
                                 <p className="text-white text-sm">
-                                    Choisis ta maladie respiratoire :
+                                    Choose your respiratory condition:
                                 </p>
                                 <Select onValueChange={handleMaladieSelect}>
                                     <SelectTrigger className="bg-black/40 border-white/10 text-white">
-                                        <SelectValue placeholder="Sélectionne..." />
+                                        <SelectValue placeholder="Select..." />
                                     </SelectTrigger>
                                     <SelectContent className="bg-[#0a0e1a] border-white/10 text-white">
                                         {MALADIES.map((item) => (
@@ -415,16 +415,16 @@ export default function HealthAssistantPanel({
                             <Card className="bg-white/5 border-white/10 p-4 space-y-4">
                                 <div className="space-y-2">
                                     <p className="text-white text-sm">
-                                        Partage ta localisation (Ville ou lat,lon). Nous croiserons NASA TEMPO (NO₂/O₃), OpenAQ (PM2.5) et Open-Meteo (vents, humidité).
+                                        Share your location (City or lat,lon). We'll combine NASA TEMPO (NO₂/O₃), OpenAQ (PM2.5) and Open-Meteo (winds, humidity).
                                     </p>
                                     <Input
-                                        placeholder="Ville (ex. Montréal)"
+                                        placeholder="City (e.g., Montreal)"
                                         value={cityInput}
                                         onChange={(event) => setCityInput(event.target.value)}
                                         className="text-white bg-black/40 border-white/10"
                                     />
                                     <Input
-                                        placeholder="Lat,Lon (ex. 45.5019,-73.5674)"
+                                        placeholder="Lat,Lon (e.g., 45.5019,-73.5674)"
                                         value={latLonInput}
                                         onChange={(event) => setLatLonInput(event.target.value)}
                                         className="text-white bg-black/40 border-white/10"
@@ -436,7 +436,7 @@ export default function HealthAssistantPanel({
                                     className="bg-green-600 hover:bg-green-700 text-white"
                                     disabled={isLoading}
                                 >
-                                    {isLoading ? 'Analyse en cours...' : 'Analyser la qualité de l’air'}
+                                    {isLoading ? 'Analyzing...' : 'Analyze air quality'}
                                 </Button>
                             </Card>
                         )}
@@ -446,13 +446,13 @@ export default function HealthAssistantPanel({
                                 <div className="flex items-start gap-3">
                                     <Wind className="w-5 h-5 text-blue-500" />
                                     <div>
-                                        <p className="text-white text-sm font-medium">Qualité actuelle</p>
-                                        <p className="text-white/70 text-xs">AQI {aqiData.aqi} · Vent {aqiData.windSpeed} m/s · Humidité {aqiData.humidity}%</p>
+                                        <p className="text-white text-sm font-medium">Current air quality</p>
+                                        <p className="text-white/70 text-xs">AQI {aqiData.aqi} · Wind {aqiData.windSpeed} m/s · Humidity {aqiData.humidity}%</p>
                                         <p className="text-white/60 text-xs mt-2">{riskAssessment}</p>
                                     </div>
                                 </div>
                                 <div className="space-y-3">
-                                    <p className="text-white text-sm font-medium">Zones recommandées (IA + guidelines OMS)</p>
+                                    <p className="text-white text-sm font-medium">Recommended zones (AI + WHO guidelines)</p>
                                     <ul className="space-y-2 text-white/80 text-sm">
                                         {adaptedZones.map((zone) => (
                                             <li key={zone} className="flex items-start gap-2">
@@ -466,7 +466,7 @@ export default function HealthAssistantPanel({
                                     onClick={handleZonesNext}
                                     className="bg-green-600 hover:bg-green-700 text-white"
                                 >
-                                    Générer mes conseils personnalisés
+                                    Generate my personalized tips
                                 </Button>
                             </Card>
                         )}
@@ -476,7 +476,7 @@ export default function HealthAssistantPanel({
                                 <div className="flex items-start gap-3">
                                     <AlertTriangle className="w-5 h-5 text-orange-500" />
                                     <div>
-                                        <p className="text-white text-sm font-medium">Profils vulnérables</p>
+                                        <p className="text-white text-sm font-medium">Vulnerable profiles</p>
                                         <p className="text-white/70 text-xs">{vulnerableProfiles}</p>
                                     </div>
                                 </div>
@@ -488,7 +488,7 @@ export default function HealthAssistantPanel({
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <p className="text-white text-sm font-medium">Conseils personnalisés</p>
+                                    <p className="text-white text-sm font-medium">Personalized tips</p>
                                     <ul className="space-y-2 text-white/80 text-sm">
                                         {preventionTips.map((tip) => (
                                             <li key={tip} className="flex items-start gap-2">
@@ -499,7 +499,7 @@ export default function HealthAssistantPanel({
                                     </ul>
                                 </div>
                                 <div className="space-y-2">
-                                    <p className="text-white text-sm font-medium">Innovations suggérées</p>
+                                    <p className="text-white text-sm font-medium">Suggested innovations</p>
                                     <ul className="space-y-2 text-white/80 text-sm">
                                         {INNOVATIONS.map((innovation) => (
                                             <li key={innovation} className="flex items-start gap-2">
@@ -510,7 +510,7 @@ export default function HealthAssistantPanel({
                                     </ul>
                                 </div>
                                 <p className="text-white/50 text-[10px]">
-                                    Evidence-based : WHO AQG 2021, NASA TEMPO, OpenAQ, Open-Meteo. Consultez un médecin pour toute décision thérapeutique.
+                                    Evidence-based: WHO AQG 2021, NASA TEMPO, OpenAQ, Open-Meteo. Consult a physician for any medical decisions.
                                 </p>
                             </Card>
                         )}

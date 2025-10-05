@@ -66,24 +66,24 @@ function computeAqi(metrics: { no2: number; pm25: number; o3: number }): number 
 function buildRiskSummary(aqi: number, metrics: { no2: number; pm25: number; o3: number }) {
     if (aqi >= 150) {
         return {
-            label: 'Haut risque',
-            description: `Haut risque : NO₂ ${metrics.no2.toFixed(1)} µg/m³ (> ${WHO_LIMITS.no2}), PM2.5 ${metrics.pm25.toFixed(1)} µg/m³ (> ${WHO_LIMITS.pm25}), O₃ ${metrics.o3.toFixed(1)} µg/m³ (> ${WHO_LIMITS.o3}). Réduisez toute activité extérieure (WHO AQG 2021).`,
-            vulnerableProfiles: 'Enfants, asthmatiques, BPCO : rester en intérieur, purificateur HEPA recommandé.',
+            label: 'High risk',
+            description: `High risk: NO₂ ${metrics.no2.toFixed(1)} µg/m³ (> ${WHO_LIMITS.no2}), PM2.5 ${metrics.pm25.toFixed(1)} µg/m³ (> ${WHO_LIMITS.pm25}), O₃ ${metrics.o3.toFixed(1)} µg/m³ (> ${WHO_LIMITS.o3}). Reduce all outdoor activity (WHO AQG 2021).`,
+            vulnerableProfiles: 'Children, asthmatics, COPD: stay indoors; HEPA purifier recommended.',
         };
     }
 
     if (aqi >= 100) {
         return {
-            label: 'Modéré',
-            description: `Modéré : respect partiel des seuils OMS (NO₂ ${metrics.no2.toFixed(1)} µg/m³, PM2.5 ${metrics.pm25.toFixed(1)} µg/m³, O₃ ${metrics.o3.toFixed(1)} µg/m³). Surveillez les fluctuations issue de NASA TEMPO et OpenAQ.`,
-            vulnerableProfiles: 'Femmes enceintes, seniors, personnes souffrant d’asthme : limiter les efforts extérieurs.',
+            label: 'Moderate',
+            description: `Moderate: partial compliance with WHO thresholds (NO₂ ${metrics.no2.toFixed(1)} µg/m³, PM2.5 ${metrics.pm25.toFixed(1)} µg/m³, O₃ ${metrics.o3.toFixed(1)} µg/m³). Monitor fluctuations from NASA TEMPO and OpenAQ.`,
+            vulnerableProfiles: 'Pregnant women, seniors, people with asthma: limit outdoor exertion.',
         };
     }
 
     return {
-        label: 'Bon',
-        description: `Bon : niveaux sous les seuils WHO AQG 2021 (NO₂ ${metrics.no2.toFixed(1)} µg/m³, PM2.5 ${metrics.pm25.toFixed(1)} µg/m³, O₃ ${metrics.o3.toFixed(1)} µg/m³).`,
-        vulnerableProfiles: 'Population générale : conditions favorables, maintenir une surveillance régulière.',
+        label: 'Good',
+        description: `Good: levels below WHO AQG 2021 (NO₂ ${metrics.no2.toFixed(1)} µg/m³, PM2.5 ${metrics.pm25.toFixed(1)} µg/m³, O₃ ${metrics.o3.toFixed(1)} µg/m³).`,
+        vulnerableProfiles: 'General population: favorable conditions; maintain regular monitoring.',
     };
 }
 
@@ -261,7 +261,7 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
     const cities = useMemo(
         () => [
             { lat: 40.7128, lon: -74.006, name: 'New York' },
-            { lat: 51.5074, lon: -0.1278, name: 'Londres' },
+            { lat: 51.5074, lon: -0.1278, name: 'London' },
             { lat: 35.6762, lon: 139.6503, name: 'Tokyo' },
             { lat: 19.4326, lon: -99.1332, name: 'Mexico' },
             { lat: 28.6139, lon: 77.209, name: 'Delhi' },
@@ -270,7 +270,7 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
             { lat: 34.0522, lon: -118.2437, name: 'Los Angeles' },
             { lat: 49.2827, lon: -123.1207, name: 'Vancouver' },
             { lat: 45.4215, lon: -75.6972, name: 'Ottawa' },
-            { lat: 45.5017, lon: -73.5673, name: 'Montréal' },
+            { lat: 45.5017, lon: -73.5673, name: 'Montreal' },
         ],
         []
     );
@@ -341,8 +341,8 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
             const risk = buildRiskSummary(aqi, metrics);
 
             const payload = {
-                name: aggregate ? clicked.name : 'Localisation',
-                location: `${clicked.name} (données satellite + sol)`,
+                name: aggregate ? clicked.name : 'Location',
+                location: `${clicked.name} (satellite + ground data)`,
                 lat: aggregate.lat,
                 lon: aggregate.lon,
                 NO2: Number(metrics.no2.toFixed(1)),
@@ -379,15 +379,15 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
                     const aqi = computeAqi(averages);
                     const risk = buildRiskSummary(aqi, averages);
                     const diseaseProbabilities = [
-                        `Asthme : ${Math.min(90, Math.round(aqi * 0.45))}% (NO₂ + PM2.5 élevés).`,
-                        `Bronchite chronique : ${Math.min(80, Math.round(averages.pm25 * 4))}% (inspiré données OMS).`,
-                        `BPCO : ${Math.min(70, Math.round(averages.no2 * 2.2))}%.`,
-                        `Pneumonie : ${Math.min(60, Math.round(averages.o3 * 1.1))}%.`,
+                        `Asthma: ${Math.min(90, Math.round(aqi * 0.45))}% (High NO₂ + PM2.5).`,
+                        `Chronic bronchitis: ${Math.min(80, Math.round(averages.pm25 * 4))}% (based on WHO data).`,
+                        `COPD: ${Math.min(70, Math.round(averages.no2 * 2.2))}%.`,
+                        `Pneumonia: ${Math.min(60, Math.round(averages.o3 * 1.1))}%.`,
                     ];
 
                     const payload = {
-                        name: 'Amérique du Nord',
-                        location: `Zone Amérique du Nord (${lat.toFixed(1)}°, ${lon.toFixed(1)}°)`,
+                        name: 'North America',
+                        location: `North America zone (${lat.toFixed(1)}°, ${lon.toFixed(1)}°)`,
                         lat,
                         lon,
                         NO2: Number(averages.no2.toFixed(1)),
@@ -401,9 +401,9 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
                             summary: risk.description,
                             diseaseProbabilities,
                             keyHighlights: [
-                                `NO₂ moyen ${averages.no2.toFixed(1)} µg/m³ (OMS 24h < ${WHO_LIMITS.no2}).`,
-                                `PM2.5 moyen ${averages.pm25.toFixed(1)} µg/m³ (OMS 24h < ${WHO_LIMITS.pm25}).`,
-                                `O₃ moyen ${averages.o3.toFixed(1)} µg/m³ (OMS pic saison < ${WHO_LIMITS.o3}).`,
+                                `Avg NO₂ ${averages.no2.toFixed(1)} µg/m³ (WHO 24h < ${WHO_LIMITS.no2}).`,
+                                `Avg PM2.5 ${averages.pm25.toFixed(1)} µg/m³ (WHO 24h < ${WHO_LIMITS.pm25}).`,
+                                `Avg O₃ ${averages.o3.toFixed(1)} µg/m³ (WHO seasonal peak < ${WHO_LIMITS.o3}).`,
                             ],
                             sources: ['NASA TEMPO', 'OpenAQ', 'Open-Meteo'],
                         },
@@ -417,7 +417,7 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
             const cityEntries = Array.from(aggregatedByCity.values());
             if (cityEntries.length === 0) {
                 const payload = {
-                    name: 'Localisation personnalisée',
+                    name: 'Custom Location',
                     location: `Lat ${lat.toFixed(1)}°, Lon ${lon.toFixed(1)}°`,
                     lat,
                     lon,
@@ -425,8 +425,8 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
                     NO2: 0,
                     Ozone: 0,
                     PM: 0,
-                    riskNarrative: 'Données indisponibles pour cette zone. Utilisez l’Assistant Santé pour une estimation.',
-                    vulnerableProfiles: 'Population générale : surveiller les alertes locales.',
+                    riskNarrative: 'Data unavailable for this area. Use the Health Assistant for an estimate.',
+                    vulnerableProfiles: 'General population: monitor local alerts.',
                 } as LocationInsight;
 
                 onLocationClick(payload);
@@ -457,8 +457,8 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
             const risk = buildRiskSummary(aqi, metrics);
 
             const payload = {
-                name: 'Localisation personnalisée',
-                location: `Proche de ${nearest.entry.lat.toFixed(1)}°, ${nearest.entry.lon.toFixed(1)}°`,
+                name: 'Custom Location',
+                location: `Near ${nearest.entry.lat.toFixed(1)}°, ${nearest.entry.lon.toFixed(1)}°`,
                 lat,
                 lon,
                 NO2: Number(metrics.no2.toFixed(1)),

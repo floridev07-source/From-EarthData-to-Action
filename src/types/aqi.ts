@@ -1,4 +1,4 @@
-export type AQILevel = "Bon" | "Modéré" | "Mauvais" | "Très mauvais" | "Dangereux";
+export type AQILevel = "Good" | "Moderate" | "Unhealthy" | "Very Unhealthy" | "Hazardous";
 
 export interface ForecastHour {
   datetime: string; // ISO string or HH:mm

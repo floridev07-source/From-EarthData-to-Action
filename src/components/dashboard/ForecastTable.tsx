@@ -7,18 +7,18 @@ interface Props {
 export default function ForecastTable({ data }: Props) {
   return (
     <div className="bg-white/5 border border-white/10 rounded-lg p-4 overflow-x-auto">
-      <h3 className="text-white mb-3">Prévisions détaillées (prochaine journée)</h3>
+      <h3 className="text-white mb-3">Detailed forecast (next day)</h3>
       <table className="w-full text-sm text-left">
         <thead>
           <tr className="text-white/60">
-            <th className="py-2 pr-4">Heure</th>
-            <th className="py-2 pr-4">Température (°C)</th>
-            <th className="py-2 pr-4">Vent (m/s)</th>
-            <th className="py-2 pr-4">Humidité (%)</th>
-            <th className="py-2 pr-4">Pression (hPa)</th>
-            <th className="py-2 pr-4">AQI prévu</th>
-            <th className="py-2 pr-4">Niveau AQI</th>
-            <th className="py-2 pr-4">Polluants dominants</th>
+            <th className="py-2 pr-4">Time</th>
+            <th className="py-2 pr-4">Temperature (°C)</th>
+            <th className="py-2 pr-4">Wind (m/s)</th>
+            <th className="py-2 pr-4">Humidity (%)</th>
+            <th className="py-2 pr-4">Pressure (hPa)</th>
+            <th className="py-2 pr-4">Predicted AQI</th>
+            <th className="py-2 pr-4">AQI Level</th>
+            <th className="py-2 pr-4">Dominant pollutants</th>
           </tr>
         </thead>
         <tbody>
@@ -36,7 +36,7 @@ export default function ForecastTable({ data }: Props) {
           ))}
           {!data?.length && (
             <tr>
-              <td className="py-4 text-white/60" colSpan={8}>Aucune donnée de prévision</td>
+              <td className="py-4 text-white/60" colSpan={8}>No forecast data available</td>
             </tr>
           )}
         </tbody>

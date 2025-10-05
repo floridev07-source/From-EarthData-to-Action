@@ -79,7 +79,7 @@ export default function NavigationBar({
                     </div>
                     <div>
                         <h1 className="text-white">AirVista</h1>
-                        <p className="text-xs text-white/60">Surveillance Mondiale de la Qualité de l'Air</p>
+                        <p className="text-xs text-white/60">Global Air Quality Monitoring</p>
                     </div>
                 </div>
 
@@ -106,8 +106,8 @@ export default function NavigationBar({
                 </div>
 
                 {/* Time Slider */}
-                <div className="flex items-center gap-4 w-64">
-                    <span className="text-white/60 text-sm">J{timeOffset > 0 ? '+' : ''}{timeOffset}</span>
+                <div className="flex items-center gap-4 w-48 sm:w-64">
+                    <span className="text-white/60 text-sm">D{timeOffset > 0 ? '+' : ''}{timeOffset}</span>
                     <Slider
                         value={[timeOffset]}
                         onValueChange={(value) => onTimeChange(value[0])}
@@ -127,11 +127,11 @@ export default function NavigationBar({
                     </SheetTrigger>
                     <SheetContent className="bg-black/95 border-white/10 text-white">
                         <SheetHeader>
-                            <SheetTitle className="text-white">Paramètres</SheetTitle>
+                            <SheetTitle className="text-white">Settings</SheetTitle>
                         </SheetHeader>
                         <div className="space-y-6 mt-6">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="dark-mode">Mode Sombre</Label>
+                                <Label htmlFor="dark-mode">Dark Mode</Label>
                                 <Switch id="dark-mode" checked={darkMode} onCheckedChange={applyDark} />
                             </div>
                             <div className="flex items-center justify-between">
@@ -139,11 +139,11 @@ export default function NavigationBar({
                                 <Switch id="notifications" checked={notifications} onCheckedChange={applyNotifications} />
                             </div>
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="high-contrast">Contraste Élevé</Label>
+                                <Label htmlFor="high-contrast">High Contrast</Label>
                                 <Switch id="high-contrast" checked={highContrast} onCheckedChange={applyHighContrast} />
                             </div>
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="live-data">Données en direct</Label>
+                                <Label htmlFor="live-data">Live Data</Label>
                                 <Switch id="live-data" checked={liveData} onCheckedChange={applyLiveData} />
                             </div>
                         </div>

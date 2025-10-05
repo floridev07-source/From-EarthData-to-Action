@@ -22,26 +22,26 @@ export default function SidePanel({ isOpen, onClose, locationData }: SidePanelPr
     ];
 
     const aqiLevel = locationData?.aqi || 72;
-    let aqiCategory = 'Bon';
+    let aqiCategory = 'Good';
     let aqiColor = 'text-green-600';
     if (aqiLevel > 150) {
-        aqiCategory = 'Malsain';
+        aqiCategory = 'Unhealthy';
         aqiColor = 'text-red-700';
     } else if (aqiLevel > 100) {
-        aqiCategory = 'Malsain pour les groupes sensibles';
+        aqiCategory = 'Unhealthy for Sensitive Groups';
         aqiColor = 'text-orange-700';
     } else if (aqiLevel > 50) {
-        aqiCategory = 'Modéré';
+        aqiCategory = 'Moderate';
         aqiColor = 'text-yellow-600';
     }
 
-    const vulnerable = locationData?.vulnerableProfiles || 'Population générale : surveillance standard';
-    const riskNarrative = locationData?.riskNarrative || (aqiLevel > 100 ? 'Risque accru pour les groupes sensibles selon WHO AQG 2021.' : 'Conditions favorables, sous les seuils WHO AQG 2021.');
+    const vulnerable = locationData?.vulnerableProfiles || 'General population: standard monitoring';
+    const riskNarrative = locationData?.riskNarrative || (aqiLevel > 100 ? 'Increased risk for sensitive groups per WHO AQG 2021.' : 'Favorable conditions, below WHO AQG 2021 thresholds.');
     const diseaseProbs = locationData?.regionInsights?.diseaseProbabilities || [
-        `Asthme : ${Math.min(90, Math.round((aqiLevel * 0.45) || 0))}%`,
-        `Bronchite chronique : ${Math.min(80, Math.round(((locationData?.PM || 0) * 4)))}%`,
-        `BPCO : ${Math.min(70, Math.round(((locationData?.NO2 || 0) * 2.2)))}%`,
-        `Pneumonie : ${Math.min(60, Math.round(((locationData?.Ozone || 0) * 1.1)))}%`,
+        `Asthma: ${Math.min(90, Math.round((aqiLevel * 0.45) || 0))}%`,
+        `Chronic bronchitis: ${Math.min(80, Math.round(((locationData?.PM || 0) * 4)))}%`,
+        `COPD: ${Math.min(70, Math.round(((locationData?.NO2 || 0) * 2.2)))}%`,
+        `Pneumonia: ${Math.min(60, Math.round(((locationData?.Ozone || 0) * 1.1)))}%`,
     ];
 
     return (
@@ -57,7 +57,7 @@ export default function SidePanel({ isOpen, onClose, locationData }: SidePanelPr
                     <div className="p-6 space-y-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h2 className="text-white">{locationData?.name || 'Détails de Localisation'}</h2>
+                                <h2 className="text-white">{locationData?.name || 'Location Details'}</h2>
                                 <p className="text-white/60">{locationData?.location || 'New York, USA'}</p>
                             </div>
                             <Button
@@ -65,28 +65,28 @@ export default function SidePanel({ isOpen, onClose, locationData }: SidePanelPr
                                 size="icon"
                                 onClick={onClose}
                                 className="text-white hover:bg-white/10"
-                                aria-label="Fermer le panneau latéral"
+                                aria-label="Close side panel"
                             >
                                 <X className="w-5 h-5" />
                             </Button>
                         </div>
                         <Card className="bg-gradient-to-br from-blue-600/20 to-purple-600/20 border-white/20 p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <span className="text-white/80">Indice de Qualité de l'Air</span>
+                                <span className="text-white/80">Air Quality Index</span>
                                 <Badge className={`${aqiColor} bg-white/10`}>{aqiCategory}</Badge>
                             </div>
                             <div className={`${aqiColor}`}>
                                 {aqiLevel}
                             </div>
                             <p className="text-white/60 text-sm mt-2">
-                                {aqiLevel > 100 ? 'Peut causer des problèmes de santé pour les groupes sensibles' : 'La qualité de l’air est acceptable pour la plupart des gens'}
+                                {aqiLevel > 100 ? 'May cause health issues for sensitive groups' : 'Air quality is acceptable for most people'}
                             </p>
                         </Card>
                         <div className="space-y-3">
-                            <h3 className="text-white">Niveaux de Polluants</h3>
+                            <h3 className="text-white">Pollutant Levels</h3>
                             <Card className="bg-white/5 border-white/10 p-4">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-white/80">NO₂ (Dioxyde d’Azote)</span>
+                                    <span className="text-white/80">NO₂ (Nitrogen Dioxide)</span>
                                     <span className="text-orange-700">{locationData?.NO2 || 0} µg/m³</span>
                                 </div>
                                 <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
@@ -104,7 +104,7 @@ export default function SidePanel({ isOpen, onClose, locationData }: SidePanelPr
                             </Card>
                             <Card className="bg-white/5 border-white/10 p-4">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-white/80">PM2.5 (Particules Fines)</span>
+                                    <span className="text-white/80">PM2.5 (Fine Particles)</span>
                                     <span className="text-purple-600">{locationData?.PM || 0} µg/m³</span>
                                 </div>
                                 <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
@@ -113,7 +113,7 @@ export default function SidePanel({ isOpen, onClose, locationData }: SidePanelPr
                             </Card>
                         </div>
                         <div className="space-y-3">
-                            <h3 className="text-white">Tendance sur 24 Heures</h3>
+                            <h3 className="text-white">24-Hour Trend</h3>
                             <Card className="bg-white/5 border-white/10 p-4">
                                 <ResponsiveContainer width="100%" height={200}>
                                     <AreaChart data={mockData}>
@@ -135,26 +135,26 @@ export default function SidePanel({ isOpen, onClose, locationData }: SidePanelPr
                             </Card>
                         </div>
                         <div className="space-y-3">
-                            <h3 className="text-white">Impact sur la Santé</h3>
+                            <h3 className="text-white">Health Impact</h3>
                             <Card className="bg-white/5 border-white/10 p-4 space-y-3">
                                 <div className="flex items-start gap-3">
                                     <AlertTriangle className="w-5 h-5 text-orange-700 mt-1" />
                                     <div>
-                                        <p className="text-white/80">Évaluation du risque</p>
+                                        <p className="text-white/80">Risk Assessment</p>
                                         <p className="text-white/60 text-sm">{riskNarrative}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3">
                                     <Users className="w-5 h-5 text-blue-600 mt-1" />
                                     <div>
-                                        <p className="text-white/80">Profils vulnérables</p>
+                                        <p className="text-white/80">Vulnerable Profiles</p>
                                         <p className="text-white/60 text-sm">{vulnerable}</p>
                                     </div>
                                 </div>
                             </Card>
                         </div>
                         <div className="space-y-3">
-                            <h3 className="text-white">Probabilités de Maladies</h3>
+                            <h3 className="text-white">Disease Probabilities</h3>
                             <Card className="bg-white/5 border-white/10 p-4">
                                 <ul className="space-y-2">
                                     {diseaseProbs.map((entry: string) => (
@@ -167,20 +167,20 @@ export default function SidePanel({ isOpen, onClose, locationData }: SidePanelPr
                             </Card>
                         </div>
                         <div className="space-y-3">
-                            <h3 className="text-white">Sources des Données</h3>
+                            <h3 className="text-white">Data Sources</h3>
                             <Card className="bg-white/5 border-white/10 p-4">
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <span className="text-white/60 text-sm">Satellite (TEMPO)</span>
-                                        <span className="text-green-600 text-sm">Actif</span>
+                                        <span className="text-green-600 text-sm">Active</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-white/60 text-sm">Stations au Sol</span>
-                                        <span className="text-green-600 text-sm">12 capteurs</span>
+                                        <span className="text-white/60 text-sm">Ground Stations</span>
+                                        <span className="text-green-600 text-sm">12 sensors</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-white/60 text-sm">Dernière Mise à Jour</span>
-                                        <span className="text-white/60 text-sm">Il y a 2 min</span>
+                                        <span className="text-white/60 text-sm">Last Update</span>
+                                        <span className="text-white/60 text-sm">2 min ago</span>
                                     </div>
                                 </div>
                             </Card>

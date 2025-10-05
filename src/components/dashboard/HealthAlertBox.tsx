@@ -12,7 +12,7 @@ export default function HealthAlertBox({ alertText, actions, color }: Props) {
       <div className="flex items-start gap-3">
         <AlertTriangle className="w-5 h-5 text-white/80" />
         <div className="flex-1">
-          <h3 className="text-white mb-1">Alerte santé</h3>
+          <h3 className="text-white mb-1">Health Alert</h3>
           <p className="text-white/70 text-sm mb-3">{alertText}</p>
           {actions?.length > 0 && (
             <ul className="list-disc list-inside text-white/70 text-sm space-y-1">

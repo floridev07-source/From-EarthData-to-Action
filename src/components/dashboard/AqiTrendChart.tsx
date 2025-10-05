@@ -14,7 +14,7 @@ export default function AqiTrendChart({ data }: Props) {
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-      <h3 className="text-black mb-3">Tendance AQI sur 24h</h3>
+      <h3 className="text-black mb-3">24h AQI Trend</h3>
       <div style={{ width: '100%', height: 260 }}>
         <ResponsiveContainer>
           <AreaChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>

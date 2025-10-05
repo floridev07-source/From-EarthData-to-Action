@@ -12,7 +12,7 @@ export default function Prevision24h({ onClose }: { onClose?: () => void }) {
     <div className="absolute inset-0 z-20 p-6 overflow-y-auto bg-black/60 backdrop-blur-md">
       {onClose && (
         <div className="absolute top-6 right-6 z-30">
-          <Button variant="ghost" size="icon" className="text-white" onClick={onClose} aria-label="Fermer">
+          <Button variant="ghost" size="icon" className="text-white" onClick={onClose} aria-label="Close">
             <X className="w-5 h-5" />
           </Button>
         </div>
@@ -24,7 +24,7 @@ export default function Prevision24h({ onClose }: { onClose?: () => void }) {
             <ForecastTable data={data.forecast_next_24h} />
           </>
         ) : (
-          <div className="bg-white/5 border border-white/10 rounded-lg p-4 text-white/60">Aucune donnée de prévision</div>
+          <div className="bg-white/5 border border-white/10 rounded-lg p-4 text-white/60">No forecast data</div>
         )}
       </div>
     </div>

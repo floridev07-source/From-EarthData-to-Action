@@ -1,83 +1,151 @@
-# 🌍 From EarthData to Action
+# AirVista — Global Air Quality Monitoring
 
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)  
-[![Vite](https://img.shields.io/badge/Built%20with-Vite-blue)](https://vitejs.dev/)  
-[![React](https://img.shields.io/badge/Framework-React-blue)](https://reactjs.org/)  
-[![Contributors](https://img.shields.io/badge/Contributors-You-orange)]()
+AirVista is a Vite + React (TypeScript) application that visualizes global air quality with a 3D globe, rich dashboards, health insights, and exportable reports. The UI is fully in English and designed to be responsive across devices.
 
----
+## Features
 
-## 🚀 Description
+- Interactive 3D globe with pollutant overlays (NO₂, O₃, PM2.5)
+- Live-like synthetic data with optional hooks for real APIs (NASA TEMPO, OpenAQ, Open‑Meteo)
+- Dashboard widgets: 24h AQI trend, dominant pollutants, day summary, detailed forecast table
+- Health Assistant with adaptive tips, risk narratives, and suggested zones
+- Side panel with AQI category, pollutant levels, disease probabilities, and data sources
+- Daily Report screen with CSV/PDF export
+- Alerts screen with filtering by pollutant and severity
+- Accessibility-friendly dark mode, high contrast mode, keyboard focus, and ARIA labels
+- Mobile-first responsive layout using Tailwind CSS v4
 
-**From EarthData to Action** is an interactive web application that allows users to explore, visualize, and understand the impact of air pollution using satellite and ground station data.  
+## Tech Stack
 
-It offers a rich user experience with:  
+- Framework: React 19 + TypeScript
+- Build tool: Vite 5
+- Styling: Tailwind CSS v4 (utility-first) + CSS variables for theming
+- Charts: Recharts
+- 3D: three.js + @react-three/fiber + @react-three/drei
+- UI Primitives: Radix UI (via custom wrappers in src/components/ui)
+- Icons: lucide-react
+- State/Context: React Context (src/context)
 
-- 3D globe visualization  
-- Interactive dashboards  
-- Gamification features  
-- Health awareness campaigns (e.g., Breast Cancer Awareness Month)  
+## Project Structure
 
-**Goal:** Make environmental data accessible, educational, and engaging for everyone.
+- src/components
+  - pages: high-level screens (Dashboard, RapportQuotidien for daily report, AnalyseSante for health analysis)
+  - dashboard: dashboard widgets (Trend, Forecast, Pollutants, Day summary)
+  - ui: reusable UI components (button, card, dialog, etc.)
+  - Globe3D.tsx: 3D globe scene and data synthesis
+  - HUD.tsx: bottom navigation and quick actions
+  - NavigationBar.tsx: top navigation, layer toggles, time slider, settings
+- src/context/AqiDataContext.tsx: shared AQI data state and helpers
+- src/types/aqi.ts: shared types (forecast model, AQI types)
+- src/lib: helpers (CSV export, notifications, sample data)
+- src/styles/globals.css: theme variables and Tailwind layers
 
----
+## Getting Started
 
-## 💻 Installation
+1) Install dependencies
 
-1. **Clone the repository:**  
-   ```sh
-   git clone <repo-url>
-   cd From-EarthData-to-Action
-````
+```
+npm install
+```
 
-2. **Install dependencies:**
+2) Start the dev server
 
-   ```sh
-   npm install
-   ```
+```
+npm run dev
+```
 
-3. **Configure environment variables:**
-   Copy `.env.example` to `.env` and fill in the required keys.
+- Local: http://localhost:5173/
 
-4. **Run the project in development mode:**
+3) Build for production
 
-   ```sh
-   npm run dev
-   ```
+```
+npm run build
+```
 
-Visit [http://localhost:5173](http://localhost:5173) (or the port indicated by Vite) to access the app.
+4) Preview production build
 
----
+```
+npm run preview
+```
 
-## 🛠️ Usage
+## Configuration
 
-* **3D Exploration:** Navigate the interactive globe to view air quality by region.
-* **Dashboards & Panels:** Access detailed analyses, predictions, and personalized health advice.
-* **Gamification:** Complete challenges, earn badges, and track progress in the "GamifiedScreen".
-* **Health Awareness:** Learn about campaigns like Breast Cancer Awareness Month, showing links between pollution and health.
-* **Navigation:** Use the sidebar, HUD, and panels to explore all features.
+- Tailwind is configured via the new @tailwindcss/vite plugin and inline theme tokens in CSS.
+- Dark mode and high-contrast mode are toggled by applying the .dark and .high-contrast classes to html. The UI exposes toggles in the Settings panel.
+- Some components use synthetic data by default. Hooks and endpoints are present to connect:
+  - NASA TEMPO (NO₂ / O₃)
+  - OpenAQ (PM2.5)
+  - Open‑Meteo (weather, winds)
+  Update fetch functions in src/components/HealthAssistantPanel.tsx and src/components/Globe3D.tsx as needed.
 
----
+## Internationalization
 
-## ✨ Features
+- The entire UI is currently in English. If you wish to add localization:
+  - Introduce a translation layer (e.g., i18next) and wrap the app with a provider.
+  - Extract visible strings into locale files (e.g., locales/en.json, locales/fr.json).
+  - Replace hard-coded strings with translation keys across components.
 
-* **3D Globe Visualization (Globe3D):** Interactive display of pollution data (NO₂, PM2.5, O₃, AQI, etc.)
-* **Dashboards & Panels:** Synthetic data, predictions, alerts, and health recommendations
-* **Gamification (GamifiedScreen):** Challenges, progress tracking, badges, and quizzes for fun learning
-* **Awareness Campaigns (OctobreRoseBanner):** Focus on health and prevention
-* **Modern UI:** Reusable components (`ui/`), responsive and accessible design
-* **Advanced State Management:** React contexts for panels, forms, and navigation
-* **Accessibility:** Dialogs, alerts, sheets, and components compatible with keyboard and screen readers
-* **Customization:** Themes, sidebar variants, and easy integration of new data sources
+## Responsiveness
 
----
+- The layout is mobile-first and uses Tailwind utilities for breakpoints.
+- Tables and wide content use overflow-x-auto on small screens.
+- Navigation components were adjusted to wrap or shrink on narrow viewports.
+- Test on common widths (360px, 768px, 1024px, 1280px) to validate UI.
 
-## 🤝 Contributing
+## Accessibility
 
-Contributions are welcome! Please check [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue to propose improvements or report bugs.
+- Color variables support dark and high-contrast variants.
+- Important interactive elements have ARIA labels.
+- Focus outlines use outline-ring tokens and are visible in high-contrast mode.
 
----
+## Data Model (simplified)
 
-## 📄 License
+```
+ForecastHour {
+  datetime: string
+  temperature_pred_C: number
+  humidity_pred_percent: number
+  wind_speed_pred_ms: number
+  pressure_pred_hPa: number
+  AQI_total_pred: number
+  AQI_level_text: "Good" | "Moderate" | "Unhealthy" | "Very Unhealthy" | "Hazardous" | string
+  main_pollutants: string[]
+  AQI_color_code: string
+}
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+AQIModelOutput {
+  datetime: string
+  AQI_total_pred: number
+  AQI_level_text: string
+  health_alert: string
+  main_pollutants: string[]
+  pollutant_percentages: Record<string, number>
+  weather_summary: string
+  temperature_pred_C: number
+  humidity_pred_percent: number
+  wind_speed_pred_ms: number
+  pressure_pred_hPa: number
+  forecast_next_24h: ForecastHour[]
+  population_risk_groups: string[]
+  recommended_actions: string[]
+  disease_specific_risk: string
+  AQI_color_code: string
+}
+```
+
+## Development Notes
+
+- Keep styling consistent: reuse existing utility classes and CSS variables; avoid inline styles when possible.
+- Prefer accessible, descriptive labels for all UI controls.
+- When adding charts or 3D layers, ensure performance at 60 FPS where feasible.
+- Avoid committing secrets; use environment variables for API keys.
+
+## Scripts
+
+- npm run dev — start development server
+- npm run build — type-check and build
+- npm run preview — preview production build
+- npm run lint — lint the codebase
+
+## License
+
+MIT

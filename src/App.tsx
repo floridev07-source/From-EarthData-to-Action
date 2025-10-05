@@ -57,16 +57,16 @@ export default function App() {
     const [isAssistantOpen, setIsAssistantOpen] = useState<boolean>(false);
     const [activeScreen, setActiveScreen] = useState<string | null>(null);
     const [locationData, setLocationData] = useState<LocationInsight | null>({
-        name: 'Montréal',
-        location: 'Montréal, QC, Canada',
+        name: 'Montreal',
+        location: 'Montreal, QC, Canada',
         lat: 45.5017,
         lon: -73.5673,
         NO2: 18.5,
         Ozone: 30.2,
         PM: 10.1,
         aqi: 45,
-        riskNarrative: 'Bon : niveaux sous les seuils WHO AQG 2021 (valeurs simulées).',
-        vulnerableProfiles: 'Population générale : surveillance standard',
+        riskNarrative: 'Good: levels below WHO AQG 2021 thresholds (simulated values).',
+        vulnerableProfiles: 'General population: standard monitoring',
         sources: ['NASA TEMPO', 'OpenAQ'],
         region: 'north-america',
     });
@@ -103,7 +103,7 @@ export default function App() {
         if (data.vulnerableProfiles) {
             setVulnerableProfiles(data.vulnerableProfiles);
         } else {
-            setVulnerableProfiles('Population générale : surveillance standard');
+            setVulnerableProfiles('General population: standard monitoring');
         }
         setIsSidePanelOpen(true);
         // N���ouvre plus l’Assistant Santé automatiquement sur clic globe
@@ -207,15 +207,15 @@ export default function App() {
             {/* Floating Info Panel */}
             {!isSidePanelOpen && !activeScreen && !isAssistantOpen && (
                 <div className="absolute top-24 left-6 bg-black/60 backdrop-blur-md border border-white/20 rounded-lg p-4 max-w-xs z-10">
-                    <h3 className="text-white mb-2">Bienvenue sur AirVista</h3>
+                    <h3 className="text-white mb-2">Welcome to AirVista</h3>
                     <p className="text-white/60 text-sm mb-3">
-                        Surveillez la qualité de l'air en temps réel avec les données des satellites TEMPO de la NASA et des stations au sol.
+                        Monitor air quality in real time with NASA TEMPO satellite data and ground stations.
                     </p>
                     <ul className="text-white/60 text-sm space-y-1">
-                        <li>• Activez/désactivez les couches de polluants</li>
-                        <li>• Utilisez le slider temporel pour les prévisions</li>
-                        <li>• Cliquez sur le globe pour des détails</li>
-                        <li>• Utilisez l'Assistant Santé pour des conseils personnalisés</li>
+                        <li>• Toggle pollutant layers</li>
+                        <li>• Use the time slider for forecasts</li>
+                        <li>• Click the globe for details</li>
+                        <li>• Use the Health Assistant for personalized guidance</li>
                     </ul>
                 </div>
             )}

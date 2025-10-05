@@ -22,12 +22,12 @@ export default function HUD({ onNavigate, activeAlerts, openAssistant }: HUDProp
                     </button>
                     <div>
                         <p className="text-gray-200 text-sm">Mini Map</p>
-                        <p className="text-gray-200/60 text-xs">Vue 2D</p>
+                        <p className="text-gray-200/60 text-xs">2D view</p>
                     </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                     <Button
                         variant="outline"
                         onClick={() => onNavigate('dashboard')}
@@ -42,7 +42,7 @@ export default function HUD({ onNavigate, activeAlerts, openAssistant }: HUDProp
                         className="bg-orange-600/20 border-orange-600/30 text-gray-200 hover:bg-orange-600/30"
                     >
                         <BarChart3 className="w-4 h-4 mr-2" />
-                        Prévision 24h
+                        24h Forecast
                     </Button>
 
                     <Button
@@ -51,7 +51,7 @@ export default function HUD({ onNavigate, activeAlerts, openAssistant }: HUDProp
                         className="bg-white/10 border-white/20 text-gray-200 hover:bg-white/20"
                     >
                         <FileText className="w-4 h-4 mr-2" />
-                        Rapport
+                        Report
                     </Button>
                     <Button
                         variant="outline"
@@ -59,7 +59,7 @@ export default function HUD({ onNavigate, activeAlerts, openAssistant }: HUDProp
                         className="bg-white/10 border-white/20 text-gray-200 hover:bg-white/20"
                     >
                         <Stethoscope className="w-4 h-4 mr-2" />
-                        Analyse Santé
+                        Health Analysis
                     </Button>
                     <Button
                         variant="outline"
@@ -67,7 +67,7 @@ export default function HUD({ onNavigate, activeAlerts, openAssistant }: HUDProp
                         className="bg-green-600/20 border-green-600/30 text-gray-200 hover:bg-green-600/30"
                     >
                         <Heart className="w-4 h-4 mr-2" />
-                        Assistant Santé
+                        Health Assistant
                     </Button>
 
                 </div>
@@ -79,8 +79,8 @@ export default function HUD({ onNavigate, activeAlerts, openAssistant }: HUDProp
                 >
                     <Bell className="w-5 h-5 text-gray-200" />
                     <div className="text-left">
-                        <p className="text-gray-200 text-sm">Alertes</p>
-                        <p className="text-gray-200/60 text-xs">{activeAlerts} actives</p>
+                        <p className="text-gray-200 text-sm">Alerts</p>
+                        <p className="text-gray-200/60 text-xs">{activeAlerts} active</p>
                     </div>
                     {activeAlerts > 0 && (
                         <Badge className="absolute -top-2 -right-2 bg-red-600 text-gray-200 border-0">

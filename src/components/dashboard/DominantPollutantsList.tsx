@@ -8,7 +8,7 @@ interface Props {
 export default function DominantPollutantsList({ pollutants, percentages }: Props) {
   return (
     <Card className="bg-white/5 border-white/10 p-4">
-      <h3 className="text-white mb-3">Polluants dominants</h3>
+      <h3 className="text-white mb-3">Dominant Pollutants</h3>
       <ul className="space-y-2">
         {pollutants.map((p) => (
           <li key={p} className="flex items-center justify-between text-sm">

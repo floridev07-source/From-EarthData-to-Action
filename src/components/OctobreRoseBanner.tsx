@@ -14,7 +14,7 @@ export default function OctobreRoseBanner() {
             viewBox="0 0 24 24"
             fill="none"
             className="w-5 h-5"
-            aria-label="Ruban rouge"
+            aria-label="Red ribbon"
         >
             <path
                 d="M12 2C12 2 8 6 8 10C8 12 9 14 10.5 15C9 16 8 18 8 20C8 22 10 24 12 24C12 24 10 20 10 16C10 14 11 12 12.5 11C14 12 15 14 15 16C15 20 13 24 13 24C15 24 17 22 17 20C17 18 16 16 14.5 15C16 14 17 12 17 10C17 6 13 2 13 2"
@@ -37,11 +37,11 @@ export default function OctobreRoseBanner() {
                     <button
                         onClick={() => setShowDetails(true)}
                         className="flex items-center gap-2 px-4 py-2 hover:bg-red-600/30 transition-all rounded-lg group"
-                        aria-label="En savoir plus sur Octobre Rose et la pollution"
+                        aria-label="Learn more about Pink October and pollution"
                     >
                         <RedRibbonIcon />
                         <span className="text-red-600 text-sm">
-              Octobre Rose : Pollution & Santé
+              Pink October: Pollution & Health
             </span>
                         <ExternalLink className="w-4 h-4 text-red-600/60 group-hover:text-red-600 transition-colors" />
                     </button>
@@ -55,11 +55,11 @@ export default function OctobreRoseBanner() {
                         <div className="flex items-center gap-3 mb-2">
                             <RedRibbonIcon />
                             <DialogTitle className="text-red-600">
-                                Octobre Rose : Pollution & Santé
+                                Pink October: Pollution & Health
                             </DialogTitle>
                         </div>
                         <DialogDescription className="text-gray-200/80">
-                            Sensibilisation aux liens entre qualité de l'air et cancer du sein
+                            Awareness of the links between air quality and breast cancer
                         </DialogDescription>
                     </DialogHeader>
 
@@ -67,29 +67,29 @@ export default function OctobreRoseBanner() {
                         {/* Section principale */}
                         <div>
                             <p className="text-gray-200/80">
-                                La campagne Octobre Rose met en lumière la prévention du cancer du sein, mais saviez-vous que la pollution atmosphérique joue un rôle dans les risques pour la santé ? Les polluants comme les particules fines (PM2.5), le dioxyde d’azote (NO₂) et les composés organiques volatils peuvent augmenter les risques de maladies, y compris certains cancers.
+                                The Pink October campaign highlights breast cancer prevention, but did you know that air pollution plays a role in health risks? Pollutants such as fine particles (PM2.5), nitrogen dioxide (NO₂), and volatile organic compounds can increase the risk of disease, including certain cancers.
                             </p>
                         </div>
 
                         <div className="bg-red-600/20 border-red-600/30 rounded-lg p-4">
-                            <h3 className="text-gray-200 mb-3">Polluants clés</h3>
+                            <h3 className="text-gray-200 mb-3">Key pollutants</h3>
                             <ul className="space-y-2 text-gray-200/80 text-sm">
                                 <li className="flex items-start gap-3">
                                     <div className="w-1.5 h-1.5 rounded-full bg-red-600 mt-2" />
                                     <span>
-                    <strong className="text-gray-200">PM2.5</strong> : Particules fines liées à des risques accrus de maladies respiratoires et potentiellement de cancer.
+                    <strong className="text-gray-200">PM2.5</strong>: Fine particles associated with increased risk of respiratory disease and potentially cancer.
                   </span>
                                 </li>
                                 <li className="flex items-start gap-3">
                                     <div className="w-1.5 h-1.5 rounded-full bg-red-600 mt-2" />
                                     <span>
-                    <strong className="text-gray-200">NO₂</strong> : Gaz émis par les véhicules, associé à l’inflammation chronique.
+                    <strong className="text-gray-200">NO₂</strong>: Gas emitted by vehicles, associated with chronic inflammation.
                   </span>
                                 </li>
                                 <li className="flex items-start gap-3">
                                     <div className="w-1.5 h-1.5 rounded-full bg-red-600 mt-2" />
                                     <span>
-                    <strong className="text-gray-200">Benzène</strong> : Composé cancérigène présent dans les émissions automobiles.
+                    <strong className="text-gray-200">Benzene</strong>: Carcinogenic compound present in vehicle emissions.
                   </span>
                                 </li>
                             </ul>
@@ -97,13 +97,13 @@ export default function OctobreRoseBanner() {
 
                         {/* Actions */}
                         <div className="bg-red-600/20 border-red-600/30 rounded-lg p-4">
-                            <h3 className="text-gray-200 mb-3">Comment agir ?</h3>
+                            <h3 className="text-gray-200 mb-3">How to act?</h3>
                             <ul className="space-y-2 text-gray-200/80 text-sm">
-                                <li>• Surveillez la qualité de l'air avant vos activités extérieures</li>
-                                <li>• Évitez les zones à forte circulation aux heures de pointe</li>
-                                <li>• Utilisez des purificateurs d'air à domicile si nécessaire</li>
-                                <li>• Participez aux initiatives de réduction de la pollution</li>
-                                <li>• Effectuez des dépistages réguliers</li>
+                                <li>• Check air quality before outdoor activities</li>
+                                <li>• Avoid high-traffic areas during rush hours</li>
+                                <li>• Use home air purifiers if needed</li>
+                                <li>• Participate in pollution reduction initiatives</li>
+                                <li>• Get regular screenings</li>
                             </ul>
                         </div>
 
@@ -119,7 +119,7 @@ export default function OctobreRoseBanner() {
                                     rel="noopener noreferrer"
                                     className="flex items-center justify-center gap-2"
                                 >
-                                    En savoir plus
+                                    Learn more
                                     <ExternalLink className="w-4 h-4" />
                                 </a>
                             </Button>
@@ -134,14 +134,14 @@ export default function OctobreRoseBanner() {
                                     className="flex items-center justify-center gap-2"
                                 >
                                     <Heart className="w-4 h-4" />
-                                    Faire un don
+                                    Donate
                                 </a>
                             </Button>
                         </div>
 
                         {/* Footer */}
                         <p className="text-gray-200/40 text-xs text-center">
-                            Sources : OMS, Institut National du Cancer, études épidémiologiques récentes
+                            Sources: WHO, National Cancer Institute, recent epidemiological studies
                         </p>
                     </div>
                 </DialogContent>
