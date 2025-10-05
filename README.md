@@ -1,73 +1,83 @@
-# React + TypeScript + Vite
+# 🌍 From EarthData to Action
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)  
+[![Vite](https://img.shields.io/badge/Built%20with-Vite-blue)](https://vitejs.dev/)  
+[![React](https://img.shields.io/badge/Framework-React-blue)](https://reactjs.org/)  
+[![Contributors](https://img.shields.io/badge/Contributors-You-orange)]()
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Description
 
-## React Compiler
+**From EarthData to Action** is an interactive web application that allows users to explore, visualize, and understand the impact of air pollution using satellite and ground station data.  
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+It offers a rich user experience with:  
 
-## Expanding the ESLint configuration
+- 3D globe visualization  
+- Interactive dashboards  
+- Gamification features  
+- Health awareness campaigns (e.g., Breast Cancer Awareness Month)  
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**Goal:** Make environmental data accessible, educational, and engaging for everyone.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 💻 Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. **Clone the repository:**  
+   ```sh
+   git clone <repo-url>
+   cd From-EarthData-to-Action
+````
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. **Install dependencies:**
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+   ```sh
+   npm install
+   ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+3. **Configure environment variables:**
+   Copy `.env.example` to `.env` and fill in the required keys.
+
+4. **Run the project in development mode:**
+
+   ```sh
+   npm run dev
+   ```
+
+Visit [http://localhost:5173](http://localhost:5173) (or the port indicated by Vite) to access the app.
+
+---
+
+## 🛠️ Usage
+
+* **3D Exploration:** Navigate the interactive globe to view air quality by region.
+* **Dashboards & Panels:** Access detailed analyses, predictions, and personalized health advice.
+* **Gamification:** Complete challenges, earn badges, and track progress in the "GamifiedScreen".
+* **Health Awareness:** Learn about campaigns like Breast Cancer Awareness Month, showing links between pollution and health.
+* **Navigation:** Use the sidebar, HUD, and panels to explore all features.
+
+---
+
+## ✨ Features
+
+* **3D Globe Visualization (Globe3D):** Interactive display of pollution data (NO₂, PM2.5, O₃, AQI, etc.)
+* **Dashboards & Panels:** Synthetic data, predictions, alerts, and health recommendations
+* **Gamification (GamifiedScreen):** Challenges, progress tracking, badges, and quizzes for fun learning
+* **Awareness Campaigns (OctobreRoseBanner):** Focus on health and prevention
+* **Modern UI:** Reusable components (`ui/`), responsive and accessible design
+* **Advanced State Management:** React contexts for panels, forms, and navigation
+* **Accessibility:** Dialogs, alerts, sheets, and components compatible with keyboard and screen readers
+* **Customization:** Themes, sidebar variants, and easy integration of new data sources
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please check [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue to propose improvements or report bugs.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
