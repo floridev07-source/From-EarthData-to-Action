@@ -165,7 +165,7 @@ function PollutionOverlay({
         instancedMesh.geometry.setAttribute('color', new THREE.InstancedBufferAttribute(colors, 3));
     }, [data, visible, geometry]);
 
-    useFrame((state) => {
+    useFrame((_) => {
         if (instancedMeshRef.current) {
             instancedMeshRef.current.rotation.y += 0.001;
         }
@@ -488,7 +488,7 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
 
 
 
-
+/*
     // Set initial camera to center (Montréal) and optionally lock focus on mount
     function SetInitialView({ center, zoom }: { center: [number, number]; zoom: number }) {
         const { camera } = useThree();
@@ -504,7 +504,7 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
             // eslint-disable-next-line react-hooks/exhaustive-deps
         }, []);
         return null;
-    }
+    }*/
 
     return (
         <div className="w-full h-full relative">
