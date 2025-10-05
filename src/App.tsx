@@ -8,6 +8,11 @@ import PredictionsScreen from './components/PredictionsScreen';
 import HealthAssistantPanel from './components/HealthAssistantPanel';
 import { Toaster } from './components/ui/sonner';
 import notify from './lib/notify';
+import { AqiDataProvider } from './context/AqiDataContext';
+import Dashboard from './components/pages/Dashboard';
+import RapportQuotidien from './components/pages/RapportQuotidien';
+import AnalyseSante from './components/pages/AnalyseSante';
+import Prevision24h from './components/pages/Prevision24h';
 
 type AssistantLocation = {
     city: string;
@@ -48,10 +53,23 @@ type LocationInsight = {
 export default function App() {
     const [selectedLayers, setSelectedLayers] = useState<string[]>(['NO2']);
     const [timeOffset, setTimeOffset] = useState<number>(0);
-    const [isSidePanelOpen, setIsSidePanelOpen] = useState<boolean>(false);
+    const [isSidePanelOpen, setIsSidePanelOpen] = useState<boolean>(true);
     const [isAssistantOpen, setIsAssistantOpen] = useState<boolean>(false);
     const [activeScreen, setActiveScreen] = useState<string | null>(null);
-    const [locationData, setLocationData] = useState<LocationInsight | null>(null);
+    const [locationData, setLocationData] = useState<LocationInsight | null>({
+        name: 'Montréal',
+        location: 'Montréal, QC, Canada',
+        lat: 45.5017,
+        lon: -73.5673,
+        NO2: 18.5,
+        Ozone: 30.2,
+        PM: 10.1,
+        aqi: 45,
+        riskNarrative: 'Bon : niveaux sous les seuils WHO AQG 2021 (valeurs simulées).',
+        vulnerableProfiles: 'Population générale : surveillance standard',
+        sources: ['NASA TEMPO', 'OpenAQ'],
+        region: 'north-america',
+    });
     const [assistantStep, setAssistantStep] = useState<number>(1);
     const [maladie, setMaladie] = useState<string | null>(null);
     const [location, setLocation] = useState<AssistantLocation | null>(null);
@@ -88,7 +106,7 @@ export default function App() {
             setVulnerableProfiles('Population générale : surveillance standard');
         }
         setIsSidePanelOpen(true);
-        // N’ouvre plus l’Assistant Santé automatiquement sur clic globe
+        // N���ouvre plus l’Assistant Santé automatiquement sur clic globe
     };
 
     const handleNavigate = (screen: string) => {
@@ -101,6 +119,7 @@ export default function App() {
     };
 
     return (
+        <AqiDataProvider>
         <div className="size-full relative bg-gradient-to-b from-[#0a0e1a] to-[#1a1f35] overflow-hidden">
             {/* Main Globe View */}
             <div className="h-[100vh]">
@@ -160,6 +179,18 @@ export default function App() {
             {activeScreen === 'predictions' && (
                 <PredictionsScreen onClose={() => setActiveScreen(null)} />
             )}
+            {activeScreen === 'dashboard' && (
+                <Dashboard onClose={() => setActiveScreen(null)} />
+            )}
+            {activeScreen === 'rapport' && (
+                <RapportQuotidien onClose={() => setActiveScreen(null)} />
+            )}
+            {activeScreen === 'analyse' && (
+                <AnalyseSante onClose={() => setActiveScreen(null)} />
+            )}
+            {activeScreen === 'prevision24h' && (
+                <Prevision24h onClose={() => setActiveScreen(null)} />
+            )}
 
             {/* Toast Notifications */}
             <Toaster
@@ -189,5 +220,6 @@ export default function App() {
                 </div>
             )}
         </div>
+        </AqiDataProvider>
     );
 }

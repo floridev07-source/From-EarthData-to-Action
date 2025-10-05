@@ -1,0 +1,27 @@
+{
+  "datetime": "2025-10-05T08:00:00Z",
+  "AQI_total_pred": 72,
+  "AQI_level_text": "Modéré",
+  "AQI_color_code": "#FF7E00",
+  "main_pollutants": ["PM2.5", "NO2"],
+  "pollutant_percentages": {"PM2.5": 48.3, "NO2": 27.6},
+  "pollutant_concentrations": {"PM2.5": 12.4, "NO2": 18.5, "O3": 30.2},
+  "weather_summary": "Clair",
+  "temperature_pred_C": 12,
+  "humidity_pred_%": 65,
+  "wind_speed_pred_m/s": 3.4,
+  "wind_direction_deg": 210,
+  "pressure_pred_hPa": 1015,
+  "forecast_next_24h": [
+    {"hour": "08:00","AQI": 70,"AQI_level": "Modéré","temperature_C": 12,"wind_speed_m/s": 3.2,"main_pollutants": ["PM2.5"]},
+    {"hour": "11:00","AQI": 75,"AQI_level": "Modéré","temperature_C": 15,"wind_speed_m/s": 3.6,"main_pollutants": ["PM2.5"]},
+    {"hour": "14:00","AQI": 80,"AQI_level": "Modéré","temperature_C": 16,"wind_speed_m/s": 3.8,"main_pollutants": ["PM2.5"]},
+    {"hour": "17:00","AQI": 65,"AQI_level": "Modéré","temperature_C": 14,"wind_speed_m/s": 4.0,"main_pollutants": ["NO2"]},
+    {"hour": "20:00","AQI": 60,"AQI_level": "Bon","temperature_C": 10,"wind_speed_m/s": 3.1,"main_pollutants": ["NO2"]},
+    {"hour": "23:00","AQI": 55,"AQI_level": "Bon","temperature_C": 8,"wind_speed_m/s": 2.8,"main_pollutants": ["NO2"]}
+  ],
+  "population_risk_groups": ["Enfants","Asthme","Seniors"],
+  "recommended_actions": ["Limiter l'exposition extérieure","Utiliser un purificateur intérieur"],
+  "disease_specific_risk": {"Asthma": "Moderate"},
+  "data_source": "fallback"
+}

@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useRef, type RefObject } from 'react';
-import { Canvas, useFrame, useLoader, type ThreeEvent } from '@react-three/fiber';
+import { useCallback, useMemo, useRef, useEffect, type RefObject } from 'react';
+import { Canvas, useFrame, useLoader, useThree, type ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, Sphere } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -11,6 +11,22 @@ interface PollutionPoint {
     intensity: number;
     type: PollutionType;
     name: string;
+}
+
+interface LocationInsight {
+    name?: string;
+    location?: string;
+    lat: number;
+    lon: number;
+    NO2?: number;
+    Ozone?: number;
+    PM?: number;
+    aqi?: number;
+    riskNarrative?: string;
+    vulnerableProfiles?: string;
+    sources?: string[];
+    region?: string;
+    regionInsights?: any;
 }
 
 interface Globe3DProps {
@@ -218,6 +234,7 @@ function Earth({
 
 export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: Globe3DProps) {
     const earthRef = useRef<THREE.Mesh | null>(null);
+    const controlsRef = useRef<any>(null);
 
     const cities = useMemo(
         () => [
@@ -231,6 +248,7 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
             { lat: 34.0522, lon: -118.2437, name: 'Los Angeles' },
             { lat: 49.2827, lon: -123.1207, name: 'Vancouver' },
             { lat: 45.4215, lon: -75.6972, name: 'Ottawa' },
+            { lat: 45.5017, lon: -73.5673, name: 'Montréal' },
         ],
         []
     );
@@ -300,7 +318,7 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
             const aqi = computeAqi(metrics);
             const risk = buildRiskSummary(aqi, metrics);
 
-            onLocationClick({
+            const payload = {
                 name: aggregate ? clicked.name : 'Localisation',
                 location: `${clicked.name} (données satellite + sol)`,
                 lat: aggregate.lat,
@@ -312,7 +330,9 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
                 riskNarrative: risk.description,
                 vulnerableProfiles: risk.vulnerableProfiles,
                 sources: ['NASA TEMPO', 'OpenAQ', 'Open-Meteo'],
-            });
+            } as LocationInsight;
+
+            onLocationClick(payload);
         },
         [aggregatedByCity, filteredData, onLocationClick]
     );
@@ -343,7 +363,7 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
                         `Pneumonie : ${Math.min(60, Math.round(averages.o3 * 1.1))}%.`,
                     ];
 
-                    onLocationClick({
+                    const payload = {
                         name: 'Amérique du Nord',
                         location: `Zone Amérique du Nord (${lat.toFixed(1)}°, ${lon.toFixed(1)}°)`,
                         lat,
@@ -365,26 +385,30 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
                             ],
                             sources: ['NASA TEMPO', 'OpenAQ', 'Open-Meteo'],
                         },
-                    });
+                    } as LocationInsight;
+
+                    onLocationClick(payload);
                     return;
                 }
             }
 
             const cityEntries = Array.from(aggregatedByCity.values());
             if (cityEntries.length === 0) {
-                onLocationClick({
-                    name: 'Localisation personnalisée',
-                    location: `Lat ${lat.toFixed(1)}°, Lon ${lon.toFixed(1)}°`,
-                    lat,
-                    lon,
-                    aqi: 0,
-                    NO2: 0,
-                    Ozone: 0,
-                    PM: 0,
-                    riskNarrative: 'Données indisponibles pour cette zone. Utilisez l’Assistant Santé pour une estimation.',
-                    vulnerableProfiles: 'Population générale : surveiller les alertes locales.',
-                });
-                return;
+                const payload = {
+                name: 'Localisation personnalisée',
+                location: `Lat ${lat.toFixed(1)}°, Lon ${lon.toFixed(1)}°`,
+                lat,
+                lon,
+                aqi: 0,
+                NO2: 0,
+                Ozone: 0,
+                PM: 0,
+                riskNarrative: 'Données indisponibles pour cette zone. Utilisez l’Assistant Santé pour une estimation.',
+                vulnerableProfiles: 'Population générale : surveiller les alertes locales.',
+            } as LocationInsight;
+
+            onLocationClick(payload);
+            return;
             }
 
             const toRadians = (value: number) => (value * Math.PI) / 180;
@@ -410,7 +434,7 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
             const aqi = computeAqi(metrics);
             const risk = buildRiskSummary(aqi, metrics);
 
-            onLocationClick({
+            const payload = {
                 name: 'Localisation personnalisée',
                 location: `Proche de ${nearest.entry.lat.toFixed(1)}°, ${nearest.entry.lon.toFixed(1)}°`,
                 lat,
@@ -422,13 +446,59 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
                 riskNarrative: risk.description,
                 vulnerableProfiles: risk.vulnerableProfiles,
                 sources: ['NASA TEMPO', 'OpenAQ', 'Open-Meteo'],
-            });
+            } as LocationInsight;
+
+            onLocationClick(payload);
         },
         [aggregatedByCity, onLocationClick, pollutionData]
     );
 
+    // Helper to convert lat/lon to 3D position used by markers
+    const latLonToPosition = (lat: number, lon: number, radius = 1.02) => {
+        const phi = (90 - lat) * (Math.PI / 180);
+        const theta = (lon + 180) * (Math.PI / 180);
+        const x = -(radius * Math.sin(phi) * Math.cos(theta));
+        const y = radius * Math.cos(phi);
+        const z = radius * Math.sin(phi) * Math.sin(theta);
+        return [x, y, z];
+    };
+
+
+
+
+
+    // Set initial camera to center (Montréal) and optionally lock focus on mount
+    function SetInitialView({ center, zoom }: { center: [number, number]; zoom: number }) {
+        const { camera } = useThree();
+        useEffect(() => {
+            const pos = latLonToPosition(center[0], center[1], zoom) as unknown as [number, number, number];
+            camera.position.set(pos[0], pos[1], pos[2]);
+            if (controlsRef.current && controlsRef.current.target) {
+                const tgt = latLonToPosition(center[0], center[1], 1.02) as unknown as [number, number, number];
+                controlsRef.current.target.set(tgt[0], tgt[1], tgt[2]);
+                controlsRef.current.update();
+            }
+            // no deps: run once
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, []);
+        return null;
+    }
+
+    function CenterHighlight({ lat, lon }: { lat: number; lon: number }) {
+        const pos = latLonToPosition(lat, lon, 1.03) as unknown as [number, number, number];
+        return (
+            <group position={pos as any}>
+                <mesh>
+                    <ringGeometry args={[0.025, 0.045, 32]} />
+                    <meshBasicMaterial color={'#ff4d4f'} transparent opacity={0.45} side={THREE.DoubleSide} />
+                </mesh>
+            </group>
+        );
+    }
+
     return (
-        <div className="w-full h-full">
+        <div className="w-full h-full relative">
+
             <Canvas camera={{ position: [0, 0, 3], fov: 45 }} gl={{ antialias: true, alpha: true }}>
                 <color attach="background" args={['#0a0e1a']} />
                 <ambientLight intensity={0.3} />
@@ -436,7 +506,13 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
                 <pointLight position={[-10, -10, -10]} intensity={0.3} color="#4a9eff" />
                 <Earth onSurfaceClick={handleSurfaceClick} earthRef={earthRef} />
                 <PollutionOverlay data={filteredData} visible={selectedLayer.length > 0} onPointClick={handlePointClick} />
-                <OrbitControls enablePan={false} enableZoom minDistance={1.5} maxDistance={5} enableDamping dampingFactor={0.05} />
+
+                <SetInitialView center={[45.5017, -73.5673]} zoom={3.5} />
+
+                <CenterHighlight lat={45.5017} lon={-73.5673} />
+
+                <OrbitControls ref={controlsRef} enablePan={true} enableZoom={true} enableRotate={true} minDistance={1.5} maxDistance={8} enableDamping dampingFactor={0.05} />
+
             </Canvas>
         </div>
     );

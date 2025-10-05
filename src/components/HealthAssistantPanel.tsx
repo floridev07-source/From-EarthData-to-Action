@@ -289,8 +289,8 @@ export default function HealthAssistantPanel({
     vulnerableProfiles,
     setVulnerableProfiles,
 }: HealthAssistantPanelProps) {
-    const [cityInput, setCityInput] = useState('');
-    const [latLonInput, setLatLonInput] = useState('');
+    const [cityInput, setCityInput] = useState('Montréal');
+    const [latLonInput, setLatLonInput] = useState('45.5019,-73.5674');
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState('');
 

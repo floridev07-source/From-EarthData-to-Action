@@ -1,4 +1,4 @@
-import { Map, Bell, BarChart3, Heart } from 'lucide-react';
+import { Map, Bell, BarChart3, Heart, LayoutGrid, FileText, Stethoscope } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 
@@ -30,13 +30,37 @@ export default function HUD({ onNavigate, activeAlerts, openAssistant }: HUDProp
                 <div className="flex items-center gap-3">
                     <Button
                         variant="outline"
-                        onClick={() => onNavigate('predictions')}
+                        onClick={() => onNavigate('dashboard')}
+                        className="bg-white/10 border-white/20 text-gray-200 hover:bg-white/20"
+                    >
+                        <LayoutGrid className="w-4 h-4 mr-2" />
+                        Dashboard
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => onNavigate('prevision24h')}
                         className="bg-orange-600/20 border-orange-600/30 text-gray-200 hover:bg-orange-600/30"
                     >
                         <BarChart3 className="w-4 h-4 mr-2" />
-                        Prévisions
+                        Prévision 24h
                     </Button>
 
+                    <Button
+                        variant="outline"
+                        onClick={() => onNavigate('rapport')}
+                        className="bg-white/10 border-white/20 text-gray-200 hover:bg-white/20"
+                    >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Rapport
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => onNavigate('analyse')}
+                        className="bg-white/10 border-white/20 text-gray-200 hover:bg-white/20"
+                    >
+                        <Stethoscope className="w-4 h-4 mr-2" />
+                        Analyse Santé
+                    </Button>
                     <Button
                         variant="outline"
                         onClick={openAssistant}
