@@ -67,7 +67,6 @@ npm run build
 npm run preview
 ```
 Access link to the frontend of our application deployed on Vercel:  https://from-earth-data-to-action-n8j6-git-master-floridev07s-projects.vercel.app?_vercel_share=16ffiCaFBXWcfKmpNnKH7n3VGhGBmwhU
-Access link to the frontend of our application deployed on Vercel: 
 ## Configuration
 
 - Tailwind is configured via the new @tailwindcss/vite plugin and inline theme tokens in CSS.
