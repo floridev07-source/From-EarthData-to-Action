@@ -1,13 +1,15 @@
-import { useRef, useMemo, useEffect } from 'react';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { useCallback, useMemo, useRef, type RefObject } from 'react';
+import { Canvas, useFrame, useLoader, type ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, Sphere } from '@react-three/drei';
 import * as THREE from 'three';
 
-interface PollutionData {
+type PollutionType = 'NO2' | 'Ozone' | 'PM';
+
+interface PollutionPoint {
     lat: number;
     lon: number;
     intensity: number;
-    type: 'NO2' | 'Ozone' | 'PM';
+    type: PollutionType;
     name: string;
 }
 
@@ -17,7 +19,76 @@ interface Globe3DProps {
     onLocationClick: (data: any) => void;
 }
 
-function PollutionOverlay({ data, visible }: { data: PollutionData[]; visible: boolean }) {
+const NORTH_AMERICA_BOUNDS = {
+    latMin: 5,
+    latMax: 83,
+    lonMin: -168,
+    lonMax: -52,
+};
+
+const WHO_LIMITS = {
+    no2: 25,
+    pm25: 15,
+    o3: 60,
+};
+
+function convertIntensityToConcentration(intensity: number, type: PollutionType): number {
+    const multipliers: Record<PollutionType, number> = {
+        NO2: 80,
+        Ozone: 120,
+        PM: 90,
+    };
+    return Number((intensity * multipliers[type]).toFixed(1));
+}
+
+function computeAqi(metrics: { no2: number; pm25: number; o3: number }): number {
+    const ratios = [metrics.no2 / WHO_LIMITS.no2, metrics.pm25 / WHO_LIMITS.pm25, metrics.o3 / WHO_LIMITS.o3];
+    const dominant = Math.max(...ratios, 0);
+    return Math.min(300, Math.round(dominant * 160));
+}
+
+function buildRiskSummary(aqi: number, metrics: { no2: number; pm25: number; o3: number }) {
+    if (aqi >= 150) {
+        return {
+            label: 'Haut risque',
+            description: `Haut risque : NO₂ ${metrics.no2.toFixed(1)} µg/m³ (> ${WHO_LIMITS.no2}), PM2.5 ${metrics.pm25.toFixed(1)} µg/m³ (> ${WHO_LIMITS.pm25}), O₃ ${metrics.o3.toFixed(1)} µg/m³ (> ${WHO_LIMITS.o3}). Réduisez toute activité extérieure (WHO AQG 2021).`,
+            vulnerableProfiles: 'Enfants, asthmatiques, BPCO : rester en intérieur, purificateur HEPA recommandé.',
+        };
+    }
+
+    if (aqi >= 100) {
+        return {
+            label: 'Modéré',
+            description: `Modéré : respect partiel des seuils OMS (NO₂ ${metrics.no2.toFixed(1)} µg/m³, PM2.5 ${metrics.pm25.toFixed(1)} µg/m³, O₃ ${metrics.o3.toFixed(1)} µg/m³). Surveillez les fluctuations issue de NASA TEMPO et OpenAQ.`,
+            vulnerableProfiles: 'Femmes enceintes, seniors, personnes souffrant d’asthme : limiter les efforts extérieurs.',
+        };
+    }
+
+    return {
+        label: 'Bon',
+        description: `Bon : niveaux sous les seuils WHO AQG 2021 (NO₂ ${metrics.no2.toFixed(1)} µg/m³, PM2.5 ${metrics.pm25.toFixed(1)} µg/m³, O₃ ${metrics.o3.toFixed(1)} µg/m³).`,
+        vulnerableProfiles: 'Population générale : conditions favorables, maintenir une surveillance régulière.',
+    };
+}
+
+function isWithinNorthAmerica(lat: number, lon: number) {
+    return (
+        lat >= NORTH_AMERICA_BOUNDS.latMin &&
+        lat <= NORTH_AMERICA_BOUNDS.latMax &&
+        lon >= NORTH_AMERICA_BOUNDS.lonMin &&
+        lon <= NORTH_AMERICA_BOUNDS.lonMax
+    );
+}
+
+function PollutionOverlay({
+    data,
+    visible,
+    onPointClick,
+}: {
+    data: PollutionPoint[];
+    visible: boolean;
+    onPointClick: (index: number) => void;
+}) {
     const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
     const geometry = useMemo(() => new THREE.SphereGeometry(0.01, 8, 8), []);
     const material = useMemo(
@@ -26,21 +97,24 @@ function PollutionOverlay({ data, visible }: { data: PollutionData[]; visible: b
                 transparent: true,
                 opacity: 0.8,
                 blending: THREE.AdditiveBlending,
+                vertexColors: true,
             }),
         []
     );
 
-    useEffect(() => {
-        if (!visible || !instancedMeshRef.current) return;
+    useMemo(() => geometry.computeBoundingSphere(), [geometry]);
 
-        const instanceCount = data.length;
+    useMemo(() => material.needsUpdate = true, [material]);
+
+    useMemo(() => {
+        if (!visible || !instancedMeshRef.current) return;
         const instancedMesh = instancedMeshRef.current;
-        instancedMesh.count = instanceCount;
+        instancedMesh.count = data.length;
 
         const dummy = new THREE.Object3D();
-        const colors = new Float32Array(instanceCount * 3);
+        const colors = new Float32Array(data.length * 3);
 
-        data.forEach((point, i) => {
+        data.forEach((point, index) => {
             const phi = (90 - point.lat) * (Math.PI / 180);
             const theta = (point.lon + 180) * (Math.PI / 180);
             const radius = 1.02;
@@ -51,38 +125,29 @@ function PollutionOverlay({ data, visible }: { data: PollutionData[]; visible: b
                 radius * Math.sin(phi) * Math.sin(theta)
             );
             dummy.updateMatrix();
-            instancedMesh.setMatrixAt(i, dummy.matrix);
+            instancedMesh.setMatrixAt(index, dummy.matrix);
 
-            let color: THREE.Color;
+            const color = new THREE.Color();
             switch (point.type) {
                 case 'NO2':
-                    color = point.intensity > 0.7 ? new THREE.Color(0xb45309) :
-                        point.intensity > 0.4 ? new THREE.Color(0xd97706) :
-                            new THREE.Color(0xf59e0b);
+                    color.set(point.intensity > 0.7 ? 0xb45309 : point.intensity > 0.4 ? 0xd97706 : 0xf59e0b);
                     break;
                 case 'Ozone':
-                    color = point.intensity > 0.7 ? new THREE.Color(0x1e40af) :
-                        point.intensity > 0.4 ? new THREE.Color(0x1e40af) :
-                            new THREE.Color(0x3b82f6);
+                    color.set(point.intensity > 0.7 ? 0x1e40af : point.intensity > 0.4 ? 0x2563eb : 0x3b82f6);
                     break;
                 case 'PM':
-                    color = point.intensity > 0.7 ? new THREE.Color(0x6b21a8) :
-                        point.intensity > 0.4 ? new THREE.Color(0x7e22ce) :
-                            new THREE.Color(0xa855f7);
+                    color.set(point.intensity > 0.7 ? 0x6b21a8 : point.intensity > 0.4 ? 0x7e22ce : 0xa855f7);
                     break;
-                default:
-                    color = new THREE.Color(0x16a34a);
             }
 
-            colors[i * 3] = color.r;
-            colors[i * 3 + 1] = color.g;
-            colors[i * 3 + 2] = color.b;
+            colors[index * 3] = color.r;
+            colors[index * 3 + 1] = color.g;
+            colors[index * 3 + 2] = color.b;
         });
 
         instancedMesh.instanceMatrix.needsUpdate = true;
         instancedMesh.geometry.setAttribute('color', new THREE.InstancedBufferAttribute(colors, 3));
-        material.vertexColors = true;
-    }, [data, visible]);
+    }, [data, visible, geometry]);
 
     useFrame((state) => {
         if (instancedMeshRef.current) {
@@ -90,16 +155,35 @@ function PollutionOverlay({ data, visible }: { data: PollutionData[]; visible: b
         }
     });
 
-    if (!visible) return null;
+    if (!visible || data.length === 0) {
+        return null;
+    }
 
-    return <instancedMesh ref={instancedMeshRef} args={[geometry, material, data.length]} />;
+    return (
+        <instancedMesh
+            ref={instancedMeshRef}
+            args={[geometry, material, data.length]}
+            onPointerDown={(event) => {
+                event.stopPropagation();
+                if (typeof event.instanceId === 'number') {
+                    onPointClick(event.instanceId);
+                }
+            }}
+        />
+    );
 }
 
-function Earth({ selectedLayer, timeOffset, onLocationClick, filteredData, earthRef }: Globe3DProps & { filteredData: PollutionData[]; earthRef: React.Ref<THREE.Mesh> }) {
+function Earth({
+    onSurfaceClick,
+    earthRef,
+}: {
+    onSurfaceClick: (coords: { lat: number; lon: number }) => void;
+    earthRef: RefObject<THREE.Mesh | null>;
+}) {
     const atmosphereRef = useRef<THREE.Mesh>(null);
     const earthTexture = useLoader(THREE.TextureLoader, 'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
 
-    useFrame((state) => {
+    useFrame(() => {
         if (earthRef.current) {
             earthRef.current.rotation.y += 0.001;
         }
@@ -108,142 +192,251 @@ function Earth({ selectedLayer, timeOffset, onLocationClick, filteredData, earth
         }
     });
 
+    const handleSurfaceInteraction = useCallback(
+        (event: ThreeEvent<MouseEvent>) => {
+            event.stopPropagation();
+            const point = event.point.clone().normalize();
+            const lat = 90 - (Math.acos(point.y) * 180) / Math.PI;
+            let lon = (Math.atan2(point.z, point.x) * 180) / Math.PI;
+            if (lon > 180) lon -= 360;
+            onSurfaceClick({ lat, lon });
+        },
+        [onSurfaceClick]
+    );
+
     return (
         <group>
-            <Sphere ref={earthRef} args={[1, 64, 64]}>
-                <meshPhongMaterial
-                    map={earthTexture}
-                    emissive="#0a1f14"
-                    specular="#333333"
-                    shininess={25}
-                />
+            <Sphere ref={earthRef} args={[1, 64, 64]} onPointerDown={handleSurfaceInteraction}>
+                <meshPhongMaterial map={earthTexture} emissive="#0a1f14" specular="#333333" shininess={25} />
             </Sphere>
             <Sphere ref={atmosphereRef} args={[1.05, 64, 64]}>
-                <meshPhongMaterial
-                    color="#4a9eff"
-                    transparent
-                    opacity={0.15}
-                    side={THREE.BackSide}
-                />
+                <meshPhongMaterial color="#4a9eff" transparent opacity={0.15} side={THREE.BackSide} />
             </Sphere>
-            <PollutionOverlay data={filteredData} visible={selectedLayer.length > 0} />
         </group>
     );
 }
 
 export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: Globe3DProps) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const raycaster = useRef(new THREE.Raycaster());
-    const mouse = useRef(new THREE.Vector2());
-    const pointsRef = useRef<THREE.InstancedMesh>(null);
-    const earthRef = useRef<THREE.Mesh>(null);
+    const earthRef = useRef<THREE.Mesh | null>(null);
 
     const cities = useMemo(
         () => [
-            { lat: 40.7128, lon: -74.0060, name: 'New York' },
+            { lat: 40.7128, lon: -74.006, name: 'New York' },
             { lat: 51.5074, lon: -0.1278, name: 'Londres' },
             { lat: 35.6762, lon: 139.6503, name: 'Tokyo' },
             { lat: 19.4326, lon: -99.1332, name: 'Mexico' },
-            { lat: 28.6139, lon: 77.2090, name: 'Delhi' },
+            { lat: 28.6139, lon: 77.209, name: 'Delhi' },
             { lat: -23.5505, lon: -46.6333, name: 'São Paulo' },
             { lat: 31.2304, lon: 121.4737, name: 'Shanghai' },
             { lat: 34.0522, lon: -118.2437, name: 'Los Angeles' },
+            { lat: 49.2827, lon: -123.1207, name: 'Vancouver' },
+            { lat: 45.4215, lon: -75.6972, name: 'Ottawa' },
         ],
         []
     );
 
     const pollutionData = useMemo(() => {
-        const data: PollutionData[] = [];
-        cities.forEach(city => {
-            ['NO2', 'Ozone', 'PM'].forEach(type => {
-                data.push({
+        const entries: PollutionPoint[] = [];
+        cities.forEach((city) => {
+            (['NO2', 'Ozone', 'PM'] as PollutionType[]).forEach((type) => {
+                const base = 0.3 + Math.random() * 0.4;
+                const variation = timeOffset * 0.02;
+                entries.push({
                     lat: city.lat,
                     lon: city.lon,
-                    intensity: Math.min(1, 0.3 + Math.random() * 0.6 + timeOffset * 0.02),
-                    type: type as 'NO2' | 'Ozone' | 'PM',
                     name: city.name,
+                    type,
+                    intensity: Math.min(1, base + variation),
                 });
             });
         });
-        return data;
-    }, [timeOffset, cities]);
+        return entries;
+    }, [cities, timeOffset]);
 
     const filteredData = useMemo(() => {
-        return pollutionData.filter(d => selectedLayer.includes(d.type));
+        if (selectedLayer.length === 0) {
+            return pollutionData;
+        }
+        return pollutionData.filter((entry) => selectedLayer.includes(entry.type));
     }, [pollutionData, selectedLayer]);
 
-    useEffect(() => {
-        const handleClick = (event: MouseEvent) => {
-            if (!canvasRef.current || !pointsRef.current || !earthRef.current) return;
-            const rect = canvasRef.current.getBoundingClientRect();
-            mouse.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    const aggregatedByCity = useMemo(() => {
+        const cityMap = new Map<
+            string,
+            {
+                lat: number;
+                lon: number;
+                metrics: Record<PollutionType, number>;
+            }
+        >();
 
-            raycaster.current.setFromCamera(mouse.current, canvasRef.current.getContext('webgl')!.getParameter(0x1700));
-            const intersects = raycaster.current.intersectObjects([pointsRef.current, earthRef.current]);
+        pollutionData.forEach((entry) => {
+            if (!cityMap.has(entry.name)) {
+                cityMap.set(entry.name, {
+                    lat: entry.lat,
+                    lon: entry.lon,
+                    metrics: { NO2: 0, Ozone: 0, PM: 0 },
+                });
+            }
+            const cityRecord = cityMap.get(entry.name)!;
+            cityRecord.metrics[entry.type] = convertIntensityToConcentration(entry.intensity, entry.type);
+        });
 
-            if (intersects.length > 0) {
-                const intersect = intersects[0];
-                if (intersect.object === pointsRef.current) {
-                    const index = intersect.instanceId;
-                    if (index !== undefined) {
-                        const clickedData = filteredData[index];
-                        onLocationClick({
-                            name: clickedData.name,
-                            location: clickedData.name,
-                            lat: clickedData.lat,
-                            lon: clickedData.lon,
-                            aqi: Math.round(clickedData.intensity * 300),
-                            [clickedData.type]: Math.round(clickedData.intensity * 200),
-                        });
-                    }
-                } else if (intersect.object === earthRef.current) {
-                    // Calculate lat/lon from intersection point
-                    const point = intersect.point.normalize(); // Normalize to unit sphere
-                    const lat = 90 - (Math.acos(point.y) * 180 / Math.PI);
-                    const lon = (Math.atan2(point.z, point.x) * 180 / Math.PI) - 180;
+        return cityMap;
+    }, [pollutionData]);
+
+    const handlePointClick = useCallback(
+        (index: number) => {
+            const clicked = filteredData[index];
+            if (!clicked) return;
+            const aggregate = aggregatedByCity.get(clicked.name);
+            if (!aggregate) return;
+
+            const metrics = {
+                no2: aggregate.metrics.NO2,
+                pm25: aggregate.metrics.PM,
+                o3: aggregate.metrics.Ozone,
+            };
+            const aqi = computeAqi(metrics);
+            const risk = buildRiskSummary(aqi, metrics);
+
+            onLocationClick({
+                name: aggregate ? clicked.name : 'Localisation',
+                location: `${clicked.name} (données satellite + sol)`,
+                lat: aggregate.lat,
+                lon: aggregate.lon,
+                NO2: Number(metrics.no2.toFixed(1)),
+                Ozone: Number(metrics.o3.toFixed(1)),
+                PM: Number(metrics.pm25.toFixed(1)),
+                aqi,
+                riskNarrative: risk.description,
+                vulnerableProfiles: risk.vulnerableProfiles,
+                sources: ['NASA TEMPO', 'OpenAQ', 'Open-Meteo'],
+            });
+        },
+        [aggregatedByCity, filteredData, onLocationClick]
+    );
+
+    const handleSurfaceClick = useCallback(
+        ({ lat, lon }: { lat: number; lon: number }) => {
+            if (isWithinNorthAmerica(lat, lon)) {
+                const northAmericaPoints = pollutionData.filter((point) => isWithinNorthAmerica(point.lat, point.lon));
+                if (northAmericaPoints.length > 0) {
+                    const accumulators = { NO2: 0, Ozone: 0, PM: 0 } as Record<PollutionType, number>;
+                    const counts = { NO2: 0, Ozone: 0, PM: 0 } as Record<PollutionType, number>;
+                    northAmericaPoints.forEach((point) => {
+                        accumulators[point.type] += convertIntensityToConcentration(point.intensity, point.type);
+                        counts[point.type] += 1;
+                    });
+
+                    const averages = {
+                        no2: counts.NO2 ? accumulators.NO2 / counts.NO2 : 0,
+                        pm25: counts.PM ? accumulators.PM / counts.PM : 0,
+                        o3: counts.Ozone ? accumulators.Ozone / counts.Ozone : 0,
+                    };
+                    const aqi = computeAqi(averages);
+                    const risk = buildRiskSummary(aqi, averages);
+                    const diseaseProbabilities = [
+                        `Asthme : ${Math.min(90, Math.round(aqi * 0.45))}% (NO₂ + PM2.5 élevés).`,
+                        `Bronchite chronique : ${Math.min(80, Math.round(averages.pm25 * 4))}% (inspiré données OMS).`,
+                        `BPCO : ${Math.min(70, Math.round(averages.no2 * 2.2))}%.`,
+                        `Pneumonie : ${Math.min(60, Math.round(averages.o3 * 1.1))}%.`,
+                    ];
+
                     onLocationClick({
-                        name: 'Custom Location',
-                        location: 'Custom Location',
+                        name: 'Amérique du Nord',
+                        location: `Zone Amérique du Nord (${lat.toFixed(1)}°, ${lon.toFixed(1)}°)`,
                         lat,
                         lon,
-                        aqi: 0, // Default or fetch
+                        NO2: Number(averages.no2.toFixed(1)),
+                        Ozone: Number(averages.o3.toFixed(1)),
+                        PM: Number(averages.pm25.toFixed(1)),
+                        aqi,
+                        vulnerableProfiles: risk.vulnerableProfiles,
+                        riskNarrative: risk.description,
+                        region: 'north-america',
+                        regionInsights: {
+                            summary: risk.description,
+                            diseaseProbabilities,
+                            keyHighlights: [
+                                `NO₂ moyen ${averages.no2.toFixed(1)} µg/m³ (OMS 24h < ${WHO_LIMITS.no2}).`,
+                                `PM2.5 moyen ${averages.pm25.toFixed(1)} µg/m³ (OMS 24h < ${WHO_LIMITS.pm25}).`,
+                                `O₃ moyen ${averages.o3.toFixed(1)} µg/m³ (OMS pic saison < ${WHO_LIMITS.o3}).`,
+                            ],
+                            sources: ['NASA TEMPO', 'OpenAQ', 'Open-Meteo'],
+                        },
                     });
+                    return;
                 }
             }
-        };
 
-        window.addEventListener('click', handleClick);
-        return () => window.removeEventListener('click', handleClick);
-    }, [filteredData, onLocationClick]);
+            const cityEntries = Array.from(aggregatedByCity.values());
+            if (cityEntries.length === 0) {
+                onLocationClick({
+                    name: 'Localisation personnalisée',
+                    location: `Lat ${lat.toFixed(1)}°, Lon ${lon.toFixed(1)}°`,
+                    lat,
+                    lon,
+                    aqi: 0,
+                    NO2: 0,
+                    Ozone: 0,
+                    PM: 0,
+                    riskNarrative: 'Données indisponibles pour cette zone. Utilisez l’Assistant Santé pour une estimation.',
+                    vulnerableProfiles: 'Population générale : surveiller les alertes locales.',
+                });
+                return;
+            }
+
+            const toRadians = (value: number) => (value * Math.PI) / 180;
+            const nearest = cityEntries.reduce((closest, entry) => {
+                const dLat = toRadians(entry.lat - lat);
+                const dLon = toRadians(entry.lon - lon);
+                const a =
+                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(toRadians(lat)) * Math.cos(toRadians(entry.lat)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                const distance = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                if (!closest || distance < closest.distance) {
+                    return { entry, distance };
+                }
+                return closest;
+            }, null as { entry: { lat: number; lon: number; metrics: Record<PollutionType, number> }; distance: number } | null);
+
+            if (!nearest) return;
+            const metrics = {
+                no2: nearest.entry.metrics.NO2,
+                pm25: nearest.entry.metrics.PM,
+                o3: nearest.entry.metrics.Ozone,
+            };
+            const aqi = computeAqi(metrics);
+            const risk = buildRiskSummary(aqi, metrics);
+
+            onLocationClick({
+                name: 'Localisation personnalisée',
+                location: `Proche de ${nearest.entry.lat.toFixed(1)}°, ${nearest.entry.lon.toFixed(1)}°`,
+                lat,
+                lon,
+                NO2: Number(metrics.no2.toFixed(1)),
+                Ozone: Number(metrics.o3.toFixed(1)),
+                PM: Number(metrics.pm25.toFixed(1)),
+                aqi,
+                riskNarrative: risk.description,
+                vulnerableProfiles: risk.vulnerableProfiles,
+                sources: ['NASA TEMPO', 'OpenAQ', 'Open-Meteo'],
+            });
+        },
+        [aggregatedByCity, onLocationClick, pollutionData]
+    );
 
     return (
         <div className="w-full h-full">
-            <Canvas
-                ref={canvasRef}
-                camera={{ position: [0, 0, 3], fov: 45 }}
-                gl={{ antialias: true, alpha: true }}
-            >
+            <Canvas camera={{ position: [0, 0, 3], fov: 45 }} gl={{ antialias: true, alpha: true }}>
                 <color attach="background" args={['#0a0e1a']} />
                 <ambientLight intensity={0.3} />
                 <pointLight position={[10, 10, 10]} intensity={1} />
                 <pointLight position={[-10, -10, -10]} intensity={0.3} color="#4a9eff" />
-                <Earth
-                    selectedLayer={selectedLayer}
-                    timeOffset={timeOffset}
-                    onLocationClick={onLocationClick}
-                    filteredData={filteredData}
-                    earthRef={earthRef}
-                />
-                <PollutionOverlay data={filteredData} visible={selectedLayer.length > 0} ref={pointsRef} />
-                <OrbitControls
-                    enablePan={false}
-                    enableZoom={true}
-                    minDistance={1.5}
-                    maxDistance={5}
-                    enableDamping
-                    dampingFactor={0.05}
-                />
+                <Earth onSurfaceClick={handleSurfaceClick} earthRef={earthRef} />
+                <PollutionOverlay data={filteredData} visible={selectedLayer.length > 0} onPointClick={handlePointClick} />
+                <OrbitControls enablePan={false} enableZoom minDistance={1.5} maxDistance={5} enableDamping dampingFactor={0.05} />
             </Canvas>
         </div>
     );

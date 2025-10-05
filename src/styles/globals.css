@@ -78,6 +78,22 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+.high-contrast {
+  --foreground: oklch(0.99 0 0);
+  --muted-foreground: oklch(0.99 0 0);
+  --border: rgba(255, 255, 255, 0.6);
+  --ring: oklch(0.9 0 0);
+}
+
+.high-contrast body {
+  filter: contrast(1.2) saturate(1.15);
+}
+
+.high-contrast :focus-visible {
+  outline: 3px solid #ffd400;
+  outline-offset: 2px;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

@@ -1,9 +1,9 @@
-import { X, TrendingUp, AlertTriangle, Users } from 'lucide-react';
+import { X, AlertTriangle, Users } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { motion, AnimatePresence } from 'motion/react';
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface SidePanelProps {
     isOpen: boolean;
@@ -34,6 +34,15 @@ export default function SidePanel({ isOpen, onClose, locationData }: SidePanelPr
         aqiCategory = 'Modéré';
         aqiColor = 'text-yellow-600';
     }
+
+    const vulnerable = locationData?.vulnerableProfiles || 'Population générale : surveillance standard';
+    const riskNarrative = locationData?.riskNarrative || (aqiLevel > 100 ? 'Risque accru pour les groupes sensibles selon WHO AQG 2021.' : 'Conditions favorables, sous les seuils WHO AQG 2021.');
+    const diseaseProbs = locationData?.regionInsights?.diseaseProbabilities || [
+        `Asthme : ${Math.min(90, Math.round((aqiLevel * 0.45) || 0))}%`,
+        `Bronchite chronique : ${Math.min(80, Math.round(((locationData?.PM || 0) * 4)))}%`,
+        `BPCO : ${Math.min(70, Math.round(((locationData?.NO2 || 0) * 2.2)))}%`,
+        `Pneumonie : ${Math.min(60, Math.round(((locationData?.Ozone || 0) * 1.1)))}%`,
+    ];
 
     return (
         <AnimatePresence>
@@ -131,21 +140,30 @@ export default function SidePanel({ isOpen, onClose, locationData }: SidePanelPr
                                 <div className="flex items-start gap-3">
                                     <AlertTriangle className="w-5 h-5 text-orange-700 mt-1" />
                                     <div>
-                                        <p className="text-white/80">Groupes Sensibles</p>
-                                        <p className="text-white/60 text-sm">
-                                            Les enfants et les personnes âgées doivent limiter les activités extérieures
-                                        </p>
+                                        <p className="text-white/80">Évaluation du risque</p>
+                                        <p className="text-white/60 text-sm">{riskNarrative}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3">
                                     <Users className="w-5 h-5 text-blue-600 mt-1" />
                                     <div>
-                                        <p className="text-white/80">Public Général</p>
-                                        <p className="text-white/60 text-sm">
-                                            Activités normales acceptables
-                                        </p>
+                                        <p className="text-white/80">Profils vulnérables</p>
+                                        <p className="text-white/60 text-sm">{vulnerable}</p>
                                     </div>
                                 </div>
+                            </Card>
+                        </div>
+                        <div className="space-y-3">
+                            <h3 className="text-white">Probabilités de Maladies</h3>
+                            <Card className="bg-white/5 border-white/10 p-4">
+                                <ul className="space-y-2">
+                                    {diseaseProbs.map((entry: string) => (
+                                        <li key={entry} className="flex items-start gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-red-500/60 mt-2" />
+                                            <span className="text-white/80 text-sm">{entry}</span>
+                                        </li>
+                                    ))}
+                                </ul>
                             </Card>
                         </div>
                         <div className="space-y-3">

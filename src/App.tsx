@@ -7,43 +7,88 @@ import AlertsScreen from './components/AlertsScreen';
 import PredictionsScreen from './components/PredictionsScreen';
 import HealthAssistantPanel from './components/HealthAssistantPanel';
 import { Toaster } from './components/ui/sonner';
-import { toast } from 'sonner';
+import notify from './lib/notify';
+
+type AssistantLocation = {
+    city: string;
+    lat: number;
+    lon: number;
+};
+
+type AqiSnapshot = {
+    no2: number;
+    pm25: number;
+    o3: number;
+    humidity: number;
+    windSpeed: number;
+    aqi: number;
+};
+
+type LocationInsight = {
+    name?: string;
+    location?: string;
+    lat: number;
+    lon: number;
+    NO2?: number;
+    Ozone?: number;
+    PM?: number;
+    aqi?: number;
+    riskNarrative?: string;
+    vulnerableProfiles?: string;
+    sources?: string[];
+    region?: string;
+    regionInsights?: {
+        summary: string;
+        diseaseProbabilities: string[];
+        keyHighlights: string[];
+        sources: string[];
+    };
+};
 
 export default function App() {
     const [selectedLayers, setSelectedLayers] = useState<string[]>(['NO2']);
-    const [timeOffset, setTimeOffset] = useState(0);
-    const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
-    const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+    const [timeOffset, setTimeOffset] = useState<number>(0);
+    const [isSidePanelOpen, setIsSidePanelOpen] = useState<boolean>(false);
+    const [isAssistantOpen, setIsAssistantOpen] = useState<boolean>(false);
     const [activeScreen, setActiveScreen] = useState<string | null>(null);
-    const [locationData, setLocationData] = useState(null);
-    const [assistantStep, setAssistantStep] = useState(1);
-    const [maladie, setMaladie] = useState(null);
-    const [location, setLocation] = useState(null); // {city: string, lat: number, lon: number}
-    const [aqiData, setAqiData] = useState(null);
-    const [riskAssessment, setRiskAssessment] = useState(null);
-    const [adaptedZones, setAdaptedZones] = useState([]);
-    const [preventionTips, setPreventionTips] = useState([]);
-    const [respiroScore, setRespiroScore] = useState(null);
+    const [locationData, setLocationData] = useState<LocationInsight | null>(null);
+    const [assistantStep, setAssistantStep] = useState<number>(1);
+    const [maladie, setMaladie] = useState<string | null>(null);
+    const [location, setLocation] = useState<AssistantLocation | null>(null);
+    const [aqiData, setAqiData] = useState<AqiSnapshot | null>(null);
+    const [riskAssessment, setRiskAssessment] = useState<string | null>(null);
+    const [adaptedZones, setAdaptedZones] = useState<string[]>([]);
+    const [preventionTips, setPreventionTips] = useState<string[]>([]);
+    const [respiroScore, setRespiroScore] = useState<string | null>(null);
+    const [vulnerableProfiles, setVulnerableProfiles] = useState<string>('');
 
     const handleLayerToggle = (layer: string) => {
         setSelectedLayers((prev) =>
             prev.includes(layer) ? prev.filter((l) => l !== layer) : [...prev, layer]
         );
-        toast.success(`${layer} layer ${selectedLayers.includes(layer) ? 'hidden' : 'visible'}`);
+        notify.success(`${layer} layer ${selectedLayers.includes(layer) ? 'hidden' : 'visible'}`);
     };
 
     const handleTimeChange = (value: number) => {
         setTimeOffset(value);
         const dayText = value === 0 ? 'Today' : value > 0 ? `+${value} days` : `${value} days`;
-        toast.info(`Time updated: ${dayText}`);
+        notify.info(`Time updated: ${dayText}`);
     };
 
-    const handleLocationClick = (data: any) => {
+    const handleLocationClick = (data: LocationInsight) => {
         setLocationData(data);
-        setLocation({ city: data.location || 'Unknown', lat: data.lat, lon: data.lon });
+        setLocation({
+            city: data.location ?? data.name ?? 'Unknown',
+            lat: data.lat,
+            lon: data.lon,
+        });
+        if (data.vulnerableProfiles) {
+            setVulnerableProfiles(data.vulnerableProfiles);
+        } else {
+            setVulnerableProfiles('Population générale : surveillance standard');
+        }
         setIsSidePanelOpen(true);
-        setIsAssistantOpen(true);
-        setAssistantStep(1);
+        // N’ouvre plus l’Assistant Santé automatiquement sur clic globe
     };
 
     const handleNavigate = (screen: string) => {
@@ -72,7 +117,6 @@ export default function App() {
                 onLayerToggle={handleLayerToggle}
                 timeOffset={timeOffset}
                 onTimeChange={handleTimeChange}
-                onSettingsChange={(settings) => console.log(settings)}
             />
 
             {/* Side Panel */}
@@ -102,6 +146,8 @@ export default function App() {
                 setPreventionTips={setPreventionTips}
                 respiroScore={respiroScore}
                 setRespiroScore={setRespiroScore}
+                vulnerableProfiles={vulnerableProfiles}
+                setVulnerableProfiles={setVulnerableProfiles}
             />
 
             {/* HUD */}

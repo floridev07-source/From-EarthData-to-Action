@@ -1,4 +1,5 @@
 import { X, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { motion } from 'motion/react';
@@ -22,6 +23,10 @@ export default function PredictionsScreen({ onClose }: PredictionsScreenProps) {
         AQI: 40 + Math.random() * 60 + Math.sin(i / 4) * 20,
     }));
 
+    const [showNO2, setShowNO2] = useState(true);
+    const [showOzone, setShowOzone] = useState(true);
+    const [showPM, setShowPM] = useState(true);
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -32,10 +37,10 @@ export default function PredictionsScreen({ onClose }: PredictionsScreenProps) {
             <div className="h-full overflow-y-auto">
                 <div className="max-w-7xl mx-auto p-8">
                     {/* Header */}
-                    <div className="flex items-center justify-between mb-8">
+                    <div className="sticky top-0 z-10 bg-black/95 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm -mx-8 px-8 pt-2 pb-4 mb-4 flex items-center justify-between">
                         <div>
                             <h1 className="text-white mb-2">Prévisions de Qualité de l'Air</h1>
-                            <p className="text-white/60">Prévisions sur 5 jours basées sur l'IA et les données satellites</p>
+                            <p className="text-white/70 text-sm">Prévisions sur 5 jours basées sur l'IA et les données satellites</p>
                         </div>
                         <Button
                             variant="ghost"
@@ -47,8 +52,33 @@ export default function PredictionsScreen({ onClose }: PredictionsScreenProps) {
                         </Button>
                     </div>
 
+                    {/* Series toggles */}
+                    <div className="flex flex-wrap items-center gap-2 mb-6">
+                        <Button
+                            variant={showNO2 ? 'default' : 'outline'}
+                            className={showNO2 ? 'bg-white/20 text-white border-white/30' : 'border-white/20 text-white/80 hover:bg-white/10'}
+                            onClick={() => setShowNO2((v) => !v)}
+                        >
+                            NO₂
+                        </Button>
+                        <Button
+                            variant={showOzone ? 'default' : 'outline'}
+                            className={showOzone ? 'bg-white/20 text-white border-white/30' : 'border-white/20 text-white/80 hover:bg-white/10'}
+                            onClick={() => setShowOzone((v) => !v)}
+                        >
+                            Ozone
+                        </Button>
+                        <Button
+                            variant={showPM ? 'default' : 'outline'}
+                            className={showPM ? 'bg-white/20 text-white border-white/30' : 'border-white/20 text-white/80 hover:bg-white/10'}
+                            onClick={() => setShowPM((v) => !v)}
+                        >
+                            PM2.5
+                        </Button>
+                    </div>
+
                     {/* Quick Stats */}
-                    <div className="grid grid-cols-3 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <Card className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-500/30 p-6">
                             <div className="flex items-center justify-between mb-3">
                                 <span className="text-white/80">AQI de Demain</span>
@@ -80,7 +110,7 @@ export default function PredictionsScreen({ onClose }: PredictionsScreenProps) {
                     {/* 5-Day Forecast */}
                     <Card className="bg-white/5 border-white/10 p-6 mb-8">
                         <h2 className="text-white mb-6">Prévisions des Polluants sur 5 Jours</h2>
-                        <ResponsiveContainer width="100%" height={400}>
+                        <ResponsiveContainer width="100%" height={440}>
                             <LineChart data={forecastData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
                                 <XAxis dataKey="day" stroke="#ffffff60" />
@@ -93,30 +123,33 @@ export default function PredictionsScreen({ onClose }: PredictionsScreenProps) {
                                     }}
                                 />
                                 <Legend />
-                                <Line
-                                    type="monotone"
-                                    dataKey="NO2"
-                                    stroke="#fb923c"
-                                    strokeWidth={2}
-                                    dot={{ fill: '#fb923c', strokeWidth: 2 }}
-                                    strokeDasharray={(entry) => entry.predicted ? '5 5' : '0'}
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="Ozone"
-                                    stroke="#60a5fa"
-                                    strokeWidth={2}
-                                    dot={{ fill: '#60a5fa', strokeWidth: 2 }}
-                                    strokeDasharray={(entry) => entry.predicted ? '5 5' : '0'}
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="PM"
-                                    stroke="#c084fc"
-                                    strokeWidth={2}
-                                    dot={{ fill: '#c084fc', strokeWidth: 2 }}
-                                    strokeDasharray={(entry) => entry.predicted ? '5 5' : '0'}
-                                />
+                                {showNO2 && (
+                                    <Line
+                                        type="monotone"
+                                        dataKey="NO2"
+                                        stroke="#fb923c"
+                                        strokeWidth={2}
+                                        dot={{ fill: '#fb923c', strokeWidth: 2 }}
+                                    />
+                                )}
+                                {showOzone && (
+                                    <Line
+                                        type="monotone"
+                                        dataKey="Ozone"
+                                        stroke="#60a5fa"
+                                        strokeWidth={2}
+                                        dot={{ fill: '#60a5fa', strokeWidth: 2 }}
+                                    />
+                                )}
+                                {showPM && (
+                                    <Line
+                                        type="monotone"
+                                        dataKey="PM"
+                                        stroke="#c084fc"
+                                        strokeWidth={2}
+                                        dot={{ fill: '#c084fc', strokeWidth: 2 }}
+                                    />
+                                )}
                             </LineChart>
                         </ResponsiveContainer>
                         <div className="flex items-center gap-6 mt-4 justify-center">
@@ -134,7 +167,7 @@ export default function PredictionsScreen({ onClose }: PredictionsScreenProps) {
                     {/* 24-Hour AQI Prediction */}
                     <Card className="bg-white/5 border-white/10 p-6">
                         <h2 className="text-white mb-6">Prévision AQI sur 24 Heures</h2>
-                        <ResponsiveContainer width="100%" height={300}>
+                        <ResponsiveContainer width="100%" height={340}>
                             <AreaChart data={hourlyData}>
                                 <defs>
                                     <linearGradient id="colorAQI" x1="0" y1="0" x2="0" y2="1">

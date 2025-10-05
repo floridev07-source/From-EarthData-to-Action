@@ -1,4 +1,4 @@
-import { Map, Bell, Download, BarChart3, Heart } from 'lucide-react';
+import { Map, Bell, BarChart3, Heart } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 
@@ -46,13 +46,6 @@ export default function HUD({ onNavigate, activeAlerts, openAssistant }: HUDProp
                         Assistant Santé
                     </Button>
 
-                    <Button
-                        variant="outline"
-                        className="bg-orange-600/20 border-orange-600/30 text-gray-200 hover:bg-orange-600/30"
-                    >
-                        <Download className="w-4 h-4 mr-2" />
-                        Exporter
-                    </Button>
                 </div>
 
                 {/* Alerts */}

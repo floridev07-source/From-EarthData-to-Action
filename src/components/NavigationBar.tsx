@@ -1,4 +1,5 @@
-import { Menu, Wind, Cloud, Droplets, Settings } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Wind, Cloud, Droplets, Settings } from 'lucide-react';
 import { Button } from './ui/button';
 import { Slider } from './ui/slider';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
@@ -10,7 +11,6 @@ interface NavigationBarProps {
     onLayerToggle: (layer: string) => void;
     timeOffset: number;
     onTimeChange: (value: number) => void;
-    onSettingsChange: (settings: any) => void;
 }
 
 export default function NavigationBar({
@@ -18,8 +18,51 @@ export default function NavigationBar({
                                           onLayerToggle,
                                           timeOffset,
                                           onTimeChange,
-                                          onSettingsChange,
                                       }: NavigationBarProps) {
+    const [darkMode, setDarkMode] = useState<boolean>(false);
+    const [notifications, setNotifications] = useState<boolean>(true);
+    const [highContrast, setHighContrast] = useState<boolean>(false);
+    const [liveData, setLiveData] = useState<boolean>(false);
+
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('theme');
+        const savedNotif = localStorage.getItem('notifications');
+        const savedHC = localStorage.getItem('high-contrast');
+        const savedLive = localStorage.getItem('live-data');
+        const isDark = savedTheme ? savedTheme === 'dark' : document.documentElement.classList.contains('dark');
+        setDarkMode(isDark);
+        setNotifications(savedNotif ? savedNotif === 'true' : true);
+        setHighContrast(savedHC ? savedHC === 'true' : false);
+        setLiveData(savedLive ? savedLive === 'true' : false);
+        // Apply current classes on mount
+        document.documentElement.classList.toggle('dark', isDark);
+        document.documentElement.classList.toggle('high-contrast', savedHC === 'true');
+    }, []);
+
+    const applyDark = (enabled: boolean) => {
+        setDarkMode(enabled);
+        document.documentElement.classList.toggle('dark', enabled);
+        localStorage.setItem('theme', enabled ? 'dark' : 'light');
+    };
+
+    const applyNotifications = (enabled: boolean) => {
+        setNotifications(enabled);
+        localStorage.setItem('notifications', String(enabled));
+        window.dispatchEvent(new CustomEvent('app:notifications', { detail: { enabled } }));
+    };
+
+    const applyHighContrast = (enabled: boolean) => {
+        setHighContrast(enabled);
+        document.documentElement.classList.toggle('high-contrast', enabled);
+        localStorage.setItem('high-contrast', String(enabled));
+    };
+
+    const applyLiveData = (enabled: boolean) => {
+        setLiveData(enabled);
+        localStorage.setItem('live-data', String(enabled));
+        window.dispatchEvent(new CustomEvent('app:live-data', { detail: { enabled } }));
+    };
+
     const layers = [
         { id: 'NO2', label: 'NO₂', icon: Wind, color: 'text-orange-400' },
         { id: 'Ozone', label: 'Ozone', icon: Cloud, color: 'text-blue-400' },
@@ -89,15 +132,19 @@ export default function NavigationBar({
                         <div className="space-y-6 mt-6">
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="dark-mode">Mode Sombre</Label>
-                                <Switch id="dark-mode" defaultChecked />
+                                <Switch id="dark-mode" checked={darkMode} onCheckedChange={applyDark} />
                             </div>
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="notifications">Notifications</Label>
-                                <Switch id="notifications" defaultChecked />
+                                <Switch id="notifications" checked={notifications} onCheckedChange={applyNotifications} />
                             </div>
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="high-contrast">Contraste Élevé</Label>
-                                <Switch id="high-contrast" />
+                                <Switch id="high-contrast" checked={highContrast} onCheckedChange={applyHighContrast} />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="live-data">Données en direct</Label>
+                                <Switch id="live-data" checked={liveData} onCheckedChange={applyLiveData} />
                             </div>
                         </div>
                     </SheetContent>

@@ -12,9 +12,10 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
   return (
     <ol
       data-slot="breadcrumb-list"
-      className={`${
-        "text-muted-foreground flex flex-wrap items-center gap-1.5 text-sm break-words sm:gap-2.5"} ${className,
-       || ""}`}
+      className={cn(
+        "text-muted-foreground flex flex-wrap items-center gap-1.5 text-sm break-words sm:gap-2.5",
+        className
+      )}
       {...props}
     />
   );
@@ -24,7 +25,7 @@ function BreadcrumbItem({ className, ...props }: React.ComponentProps<"li">) {
   return (
     <li
       data-slot="breadcrumb-item"
-      className={`inline-flex items-center gap-1.5 ${className || ""}`}
+      className={cn("inline-flex items-center gap-1.5", className)}
       {...props}
     />
   );
@@ -42,7 +43,7 @@ function BreadcrumbLink({
   return (
     <Comp
       data-slot="breadcrumb-link"
-      className={`hover:text-foreground transition-colors ${className || ""}`}
+      className={cn("hover:text-foreground transition-colors", className)}
       {...props}
     />
   );
@@ -55,7 +56,7 @@ function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">) {
       role="link"
       aria-disabled="true"
       aria-current="page"
-      className={`text-foreground font-normal ${className || ""}`}
+      className={cn("text-foreground font-normal", className)}
       {...props}
     />
   );
@@ -71,7 +72,7 @@ function BreadcrumbSeparator({
       data-slot="breadcrumb-separator"
       role="presentation"
       aria-hidden="true"
-      className={`[&>svg]:size-3.5 ${className || ""}`}
+      className={cn("[&>svg]:size-3.5", className)}
       {...props}
     >
       {children ?? <ChevronRight />}
@@ -88,7 +89,7 @@ function BreadcrumbEllipsis({
       data-slot="breadcrumb-ellipsis"
       role="presentation"
       aria-hidden="true"
-      className={`flex size-9 items-center justify-center ${className || ""}`}
+      className={cn("flex size-9 items-center justify-center", className)}
       {...props}
     >
       <MoreHorizontal className="size-4" />
