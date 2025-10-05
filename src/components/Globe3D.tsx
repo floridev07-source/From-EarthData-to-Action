@@ -97,10 +97,10 @@ function isWithinNorthAmerica(lat: number, lon: number) {
 }
 
 function PollutionOverlay({
-    data,
-    visible,
-    onPointClick,
-}: {
+                              data,
+                              visible,
+                              onPointClick,
+                          }: {
     data: PollutionPoint[];
     visible: boolean;
     onPointClick: (index: number) => void;
@@ -167,7 +167,7 @@ function PollutionOverlay({
 
     useFrame((state) => {
         if (instancedMeshRef.current) {
-            instancedMeshRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.01;
+            instancedMeshRef.current.rotation.y += 0.001;
         }
     });
 
@@ -190,14 +190,16 @@ function PollutionOverlay({
 }
 
 function Earth({
-    onSurfaceClick,
-    earthRef,
-}: {
+                   onSurfaceClick,
+                   earthRef,
+               }: {
     onSurfaceClick: (coords: { lat: number; lon: number }) => void;
     earthRef: RefObject<THREE.Mesh | null>;
 }) {
     const atmosphereRef = useRef<THREE.Mesh>(null);
+    const highlightGroupRef = useRef<THREE.Group>(null);
     const earthTexture = useLoader(THREE.TextureLoader, 'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+    const pinTexture = useLoader(THREE.TextureLoader, 'https://raw.githubusercontent.com/oscarduzer/countries-states-cities-database/refs/heads/master/pin-carte.png'); // Chemin vers l'icône
 
     useFrame(() => {
         if (earthRef.current) {
@@ -220,10 +222,31 @@ function Earth({
         [onSurfaceClick]
     );
 
+    const latLonToPosition = (lat: number, lon: number, radius = 1.02) => {
+        const phi = (90 - lat) * (Math.PI / 180);
+        const theta = (lon + 180) * (Math.PI / 180);
+        const x = -(radius * Math.sin(phi) * Math.cos(theta));
+        const y = radius * Math.cos(phi);
+        const z = radius * Math.sin(phi) * Math.sin(theta);
+        return new THREE.Vector3(x, y, z);
+    };
+
+    useEffect(() => {
+        if (highlightGroupRef.current) {
+            highlightGroupRef.current.lookAt(new THREE.Vector3(0, 0, 0));
+        }
+    }, []);
+
     return (
         <group>
             <Sphere ref={earthRef} args={[1, 64, 64]} onPointerDown={handleSurfaceInteraction}>
                 <meshPhongMaterial map={earthTexture} emissive="#0a1f14" specular="#333333" shininess={25} />
+                <group ref={highlightGroupRef} position={latLonToPosition(45.50182284708731, -73.56219553253155, 1.03)}>
+                    <mesh>
+                        <planeGeometry args={[0.05, 0.05]} /> {/* Taille de l'icône */}
+                        <meshBasicMaterial map={pinTexture} transparent side={THREE.DoubleSide} />
+                    </mesh>
+                </group>
             </Sphere>
             <Sphere ref={atmosphereRef} args={[1.05, 64, 64]}>
                 <meshPhongMaterial color="#4a9eff" transparent opacity={0.15} side={THREE.BackSide} />
@@ -231,7 +254,6 @@ function Earth({
         </group>
     );
 }
-
 export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: Globe3DProps) {
     const earthRef = useRef<THREE.Mesh | null>(null);
     const controlsRef = useRef<any>(null);
@@ -395,20 +417,20 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
             const cityEntries = Array.from(aggregatedByCity.values());
             if (cityEntries.length === 0) {
                 const payload = {
-                name: 'Localisation personnalisée',
-                location: `Lat ${lat.toFixed(1)}°, Lon ${lon.toFixed(1)}°`,
-                lat,
-                lon,
-                aqi: 0,
-                NO2: 0,
-                Ozone: 0,
-                PM: 0,
-                riskNarrative: 'Données indisponibles pour cette zone. Utilisez l’Assistant Santé pour une estimation.',
-                vulnerableProfiles: 'Population générale : surveiller les alertes locales.',
-            } as LocationInsight;
+                    name: 'Localisation personnalisée',
+                    location: `Lat ${lat.toFixed(1)}°, Lon ${lon.toFixed(1)}°`,
+                    lat,
+                    lon,
+                    aqi: 0,
+                    NO2: 0,
+                    Ozone: 0,
+                    PM: 0,
+                    riskNarrative: 'Données indisponibles pour cette zone. Utilisez l’Assistant Santé pour une estimation.',
+                    vulnerableProfiles: 'Population générale : surveiller les alertes locales.',
+                } as LocationInsight;
 
-            onLocationClick(payload);
-            return;
+                onLocationClick(payload);
+                return;
             }
 
             const toRadians = (value: number) => (value * Math.PI) / 180;
@@ -484,34 +506,20 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
         return null;
     }
 
-    function CenterHighlight({ lat, lon }: { lat: number; lon: number }) {
-        const pos = latLonToPosition(lat, lon, 1.03) as unknown as [number, number, number];
-        return (
-            <group position={pos as any}>
-                <mesh>
-                    <ringGeometry args={[0.025, 0.045, 32]} />
-                    <meshBasicMaterial color={'#ff4d4f'} transparent opacity={0.45} side={THREE.DoubleSide} />
-                </mesh>
-            </group>
-        );
-    }
-
     return (
         <div className="w-full h-full relative">
 
             <Canvas camera={{ position: [0, 0, 3], fov: 45 }} gl={{ antialias: true, alpha: true }}>
-                <color attach="background" args={['#0a0e1a']} />
+                <color attach="background" args={['#020d30']} />
                 <ambientLight intensity={0.3} />
                 <pointLight position={[10, 10, 10]} intensity={1} />
                 <pointLight position={[-10, -10, -10]} intensity={0.3} color="#4a9eff" />
                 <Earth onSurfaceClick={handleSurfaceClick} earthRef={earthRef} />
                 <PollutionOverlay data={filteredData} visible={selectedLayer.length > 0} onPointClick={handlePointClick} />
 
-                <SetInitialView center={[45.5017, -73.5673]} zoom={3.5} />
+                {/*<SetInitialView center={[45.5017, -73.5673]} zoom={3.5} />*/}
 
-                <CenterHighlight lat={45.5017} lon={-73.5673} />
-
-                <OrbitControls ref={controlsRef} enablePan={true} enableZoom={true} enableRotate={true} minDistance={1.5} maxDistance={8} enableDamping dampingFactor={0.05} />
+                <OrbitControls autoRotate={false} ref={controlsRef} enablePan={true} enableZoom={true} enableRotate={true} minDistance={1.5} maxDistance={8} enableDamping dampingFactor={0.05} />
 
             </Canvas>
         </div>
