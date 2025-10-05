@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useEffect, type RefObject } from 'react';
-import { Canvas, useFrame, useLoader, useThree, type ThreeEvent } from '@react-three/fiber';
+import { Canvas, useFrame, useLoader, type ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, Sphere } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -475,7 +475,7 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
         [aggregatedByCity, onLocationClick, pollutionData]
     );
 
-    // Helper to convert lat/lon to 3D position used by markers
+   /* // Helper to convert lat/lon to 3D position used by markers
     const latLonToPosition = (lat: number, lon: number, radius = 1.02) => {
         const phi = (90 - lat) * (Math.PI / 180);
         const theta = (lon + 180) * (Math.PI / 180);
@@ -483,7 +483,7 @@ export default function Globe3D({ selectedLayer, timeOffset, onLocationClick }: 
         const y = radius * Math.cos(phi);
         const z = radius * Math.sin(phi) * Math.sin(theta);
         return [x, y, z];
-    };
+    };*/
 
 
 
